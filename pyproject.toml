@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "todo-project-name"
+version = "0.1.0"
+description = ""
+authors = ["Jakub Kaczor <262257@student.pwr.edu.pl>"]
+readme = "README.md"
+packages = [{include = "todo_project_name"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10, <3.12"
+pyside6 = "^6.4.1"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.0"
+pytest-black = "^0.3.12"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
