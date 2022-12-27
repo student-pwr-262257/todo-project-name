@@ -9,6 +9,7 @@ packages = [{include = "todo_project_name"}]
 [tool.poetry.dependencies]
 python = ">=3.10, <3.12"
 pyside6 = "^6.4.1"
+bitarray = ">=2.6.1"
 
 
 [tool.poetry.group.test.dependencies]

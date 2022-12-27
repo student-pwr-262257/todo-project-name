@@ -40,23 +40,28 @@ def pad(bits: bitarray):
     returns:
        (bits, N) -- (modified bitarray, number of 4-byte words).
     """
-    # number of bits
-    b = len(bits)
+    # number of bits modulo 2**64
+    b = len(bits) % (1 << 64)
 
     # calculating padding length
     pad_len = (488 - b) % 512
     if pad_len == 0:
         pad_len = 512
 
+    # splitting b into 2 4-byte words
+    b1 = b >> 32
+    b2 = b & 0xffffffff
+
     padding = bitarray('1' + '0' * (pad_len - 1))
-    # appending original length (only last 64 bits of its representation)
-    padding.frombytes((b % 2**64).to_bytes(8, 'little'))
+    # appending original length in 2 separate words
+    padding.frombytes(b1.to_bytes(4, 'little'))
+    padding.frombytes(b2.to_bytes(4, 'little'))
 
     bits += padding
 
     # number of 4-byte words
     # it actually could be easily calculated just from bits (len(bits) // 16)
-    N = (b + pad_len + 64) // 32
+    N = (b + pad_len + 64) >> 5
 
     return bits, N
 
