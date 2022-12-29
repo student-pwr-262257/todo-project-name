@@ -36,27 +36,32 @@ class MD4:
         byte_no = len(message)
 
         while idx + 64 <= byte_no:
-            X = list(struct.upack("<16I", message[idx: idx + 64])) # 16 unsigned integers
+            print(idx, idx+64)
+            X = list(struct.unpack("<16I", message[idx: idx + 64])) # 16 unsigned integers
             self._update(X)
             bits_no += 512
             idx += 64
 
-        # padding and running last iteration (or 2 in the case of empty padding)
+        # padding and running last iteration (or 2 in the case of empty padding or over 56 bytes left)
         message = message[idx:]  # remaining bytes
         left = byte_no - idx
         # b == 8 * left
         # bits to append: 448 - b (mod 512)
         # bytes to append: 56 - left (mod 64)
-        if left == 56:  # appending 512 bits.
-            message += MD4.padding
+        add = (56 - left) % 64
+        if add == 0:
+            add = 64
+        message += MD4.padding[:add]
+        bits_no += left * 8
+
+        if left + add > 64:  # can be only 56 or 120
             X = list(struct.unpack("<16I", message[:64]))
             self._update(X)
             message = message[64:]  # only 1 unprocessed pack of 16 words
-        else:
-            message += MD4.padding[0 : (56 - left) % 64]
-            bits_no += left * 8
+
         # appending number of bits
         message += struct.pack("<Q", bits_no & MD4.last64) # Q: unsigned long long (8 bytes)
+        print(f'{len(message) = }')
         X = list(struct.unpack("<16I", message))
         self._update(X)
 

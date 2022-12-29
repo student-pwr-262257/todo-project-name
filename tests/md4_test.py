@@ -14,6 +14,38 @@ def test_md4():
     ]
 
     for byte_string, md4sum in zip(byte_strings, md4sums):
-        print( MD4(byte_string).string_digest())
-        print( md4sum)
+        assert MD4(byte_string).string_digest() == md4sum
+
+
+# More test cases, comparing to results computed on the following site:
+# http://www.unit-conversion.info/texttools/md4/
+# I noticed that some sites on the internet produce hashes different than ones
+# presented as examples in the paper. The one above however is consistent with it.
+# Perhaps it is fault of text encoding. I assume that the paper uses ASCII.
+def test_extended_md4():
+    # It is important to check byte strings longer than 56 bytes,
+    # as well as ones of length mod 64 equal to 56.
+    byte_strings = [
+        b"This is a short string (shorter than 56 bytes)",
+        b"This string is longer that 56 characters, by something 5-ish.",
+        b"This string has length of 56 bytes in ASCII. The padding",
+        b"This string has length of 120 bytes in ASCII, which is "
+        b"exactly 64 bytes more than 56. Here is necessary padding: 1234567",
+        b"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
+        b"eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim "
+        b"ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut "
+        b"aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit "
+        b"in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+        b"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui "
+        b"officia deserunt mollit anim id est laborum.",
+    ]
+
+    md4sums = [
+        "c606c645ee59abf7a5800092024d7655",
+        "a982457b257c736f8d8d1a6e06732337",
+        "18985eb17340f55a0277df1ef3c998ca",
+        "b548c8ffbaf8612c9b317898a18c0ffb",
+        "8db2ba4980fa7d57725e42782ab47b42",
+    ]
+    for byte_string, md4sum in zip(byte_strings, md4sums):
         assert MD4(byte_string).string_digest() == md4sum
