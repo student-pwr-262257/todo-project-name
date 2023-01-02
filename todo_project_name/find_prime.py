@@ -1,5 +1,4 @@
 import secrets
-from core import mod_exp
 import random
 
 def rabin_miller(candidate:int, repeats:int = 30)->bool:
@@ -33,7 +32,7 @@ def rabin_miller(candidate:int, repeats:int = 30)->bool:
         while witness in visited:
             witness=random.randrange(2,candidate)
         visited.append(witness)
-        tmp=mod_exp(witness, m, candidate)
+        tmp=pow(witness, m, candidate)
         if (tmp-1)%candidate==0:
             flag=True
         for i in range(d):
