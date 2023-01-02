@@ -10,11 +10,12 @@ def mod_exp(b:int, e:int, m:int)->int:
     -m -- modulus.
     """
     bits=bin(e)[2:]
+    n=len(bits)
     b=b%m
     tmp=b
     result=1
-    for i in range(len(bits)):
-        if bits[len(bits)-1-i]=='1':
+    for i in range(n-1,-1,-1):
+        if bits[i]=='1':
             result=(result*tmp)%m
         tmp=(tmp*tmp)%m
     return result
