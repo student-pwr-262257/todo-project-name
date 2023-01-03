@@ -80,7 +80,7 @@ def _rabin_miller(candidate: int, repeats: int = 30) -> bool:
         for i in range(d):
             if (tmp+1)%candidate==0:
                 flag=True
-            tmp=tmp*2
+            tmp=(tmp*tmp)%candidate
         if flag is False:
             return False
     return True
