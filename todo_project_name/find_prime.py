@@ -1,17 +1,40 @@
 import secrets
 import random
 
-def rabin_miller(candidate:int, repeats:int = 30)->bool:
+def is_probable_prime(candidate: int) -> bool:
+    """Check if `candidate` is a probable prime.
+
+    Notes
+    =====
+    This function uses Rabin-Miller test under the hood.
     """
-    Function implements Rabin-Miller primality test. 
+    # Even numbers are not prime, neither less or equal to 1 by definition.
+    if candidate % 2 == 0 or candidate <= 1:
+        return False
+
+    return _rabin_miller(candidate=candidate, repeats=5)
+
+def _rabin_miller(candidate: int, repeats: int = 30) -> bool:
+    """Return the result of Rabin-Miller test.
+
     Returns True if test has been passed, and returns False otherwise.
-    Arguments:
-    -candidate -- tested natural number. Must be larger than repeats+2,
-    -repeats   -- number of witnesses taken into account. Ensures that 
-                probability of false positive result is less than 4^(-repeats).
+
+    Parameters
+    ==========
+    candidate
+    : tested natural number. Must be odd, greater than 2 and larger than
+      repeats + 2
+    
+    repeats
+    : number of witnesses taken into account. Ensures that probability of
+      false positive result is less than 4^(-repeats).
     """
     if(candidate<repeats+2):
         raise ValueError("candidate must be larger than repeats+2")
+
+    if candidate % 2 == 0 or candidate <= 1:
+        raise ValueError("`candidate` must be odd number greater than 2.")
+
     #candidate-1==m*2^d for some positive integers m, d
     n=len(bin(candidate)[2:])
     m=candidate-1
@@ -80,6 +103,6 @@ def find_prime(n:int)->int:
         if flag is False:
             continue
 
-        if rabin_miller(candidate,5):
+        if is_probable_prime(candidate):
             passed=True
     return candidate
