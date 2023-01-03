@@ -1,5 +1,6 @@
 import struct
 import sys
+
 # some variable names may seem obscure; they were taken directly from
 # the article "The MD4 Message Digest Algorithm" by Ronald L. Rivest
 
@@ -13,15 +14,15 @@ class MD4:
     last32 = 0xffffffff
     last64 = 0xffffffffffffffff
 
-    def __init__(self, message: bytes):
+    def __init__(self, message_bytes):
         self.digest = None
         # preparing for the algorithm
-        if sys.byteorder == 'little':
+        if sys.byteorder == "little":
             self.A = 0x67452301
             self.B = 0xefcdab89
             self.C = 0x98badcfe
             self.D = 0x10325476
-        else: # sys.byteorder == 'big'
+        else:  # sys.byteorder == "big"
             self.A = 0x01234567
             self.B = 0x89abcdef
             self.C = 0xfedcba98
@@ -33,18 +34,15 @@ class MD4:
         # to handle hashing large files (idx variable should disappear)
         idx = 0
         bits_no = 0
-        byte_no = len(message)
 
-        while idx + 64 <= byte_no:
-            print(idx, idx+64)
-            X = list(struct.unpack("<16I", message[idx: idx + 64])) # 16 unsigned integers
+        while len(chunk := next(message_bytes)) == 64:
+            X = list(struct.unpack("<16I", chunk))  # 16 unsigned integers
             self._update(X)
             bits_no += 512
-            idx += 64
 
         # padding and running last iteration (or 2 in the case of empty padding or over 56 bytes left)
-        message = message[idx:]  # remaining bytes
-        left = byte_no - idx
+        message = chunk  # remaining bytes
+        left = len(chunk)
         # b == 8 * left
         # bits to append: 448 - b (mod 512)
         # bytes to append: 56 - left (mod 64)
@@ -60,8 +58,10 @@ class MD4:
             message = message[64:]  # only 1 unprocessed pack of 16 words
 
         # appending number of bits
-        message += struct.pack("<Q", bits_no & MD4.last64) # Q: unsigned long long (8 bytes)
-        print(f'{len(message) = }')
+        message += struct.pack(
+            "<Q", bits_no & MD4.last64
+        )  # Q: unsigned long long (8 bytes)
+        print(f"{len(message) = }")
         X = list(struct.unpack("<16I", message))
         self._update(X)
 
@@ -71,6 +71,34 @@ class MD4:
 
     def string_digest(self):
         return "".join(f"{byte:02x}" for byte in self.digest)
+
+    @staticmethod
+    def _bytes_as_generator(byte_string):
+        idx = 0
+        str_len = len(byte_string)
+        while idx + 64 <= str_len:
+            yield byte_string[idx : idx + 64]
+            idx += 64
+
+        # last one might be empty, but still yield it.
+        yield byte_string[idx:]
+
+    @staticmethod
+    def _file_bytes_generator(filename):
+        with open(filename, "rb") as file:
+            # could be optimized; reading only 64 bytes at a time is quite inefficient.
+            # introducing some buffer in this function should help.
+            while (chunk := file.read(64)) != b"":
+                yield chunk
+            yield b""  # in case of
+
+    @staticmethod
+    def from_bytes(byte_string: bytes):
+        return MD4(MD4._bytes_as_generator(byte_string))
+
+    @staticmethod
+    def from_file(filename: str):
+        return MD4(MD4._file_bytes_generator(filename))
 
     # bitwise conditional
     @staticmethod
@@ -140,5 +168,5 @@ class MD4:
 
 if __name__ == "__main__":
     # quick test for syntax errors
-    x = MD4(b"abcdefghijklmnopqrstuvwxyz")
+    x = MD4.from_bytes(b"abcdefghijklmnopqrstuvwxyz")
     print(x.string_digest())

@@ -1,0 +1,31 @@
+This is a test file for testing md4 algorithm.
+It's hash is calculated on the following site:
+https://www.cmtoinchesconvert.com/online-tools/md4_file_hash.html
+
+This file is a bit longer than test cases based on byte strings.
+It is meant to test whether hashing files is any different than hashing
+stings of bytes. It shouldn't be, but we test it anyway.
+
+Below is this same message in frech:
+
+Ceci est un fichier de test pour tester l'algorithme md4.
+Son hash est calculé sur le site suivant :
+https://www.cmtoinchesconvert.com/online-tools/md4_file_hash.html
+
+Ce fichier est un peu plus long que les cas de test basés sur des chaînes d'octets.
+Il est destiné à tester si le hachage des fichiers est différent du hachage
+piqûres d'octets. Cela ne devrait pas être le cas, mais nous le testons quand même.
+
+Ci-dessous ce même message en allemand :
+
+Dies ist eine Testdatei zum Testen des MD4-Algorithmus.
+Sein Hash wird auf der folgenden Seite berechnet:
+https://www.cmtoinchesconvert.com/online-tools/md4_file_hash.html
+
+Diese Datei ist etwas länger als Testfälle, die auf Byte-Strings basieren.
+Es soll testen, ob sich das Hashing von Dateien vom Hashing unterscheidet
+Stiche von Bytes. Sollte nicht sein, aber wir testen es trotzdem.
+
+The massage was translated using translate.google.com.
+
+CAUTION: do not change this file's encoding! It could result in a different hash.

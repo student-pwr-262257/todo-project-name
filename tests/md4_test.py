@@ -14,7 +14,7 @@ def test_md4():
     ]
 
     for byte_string, md4sum in zip(byte_strings, md4sums):
-        assert MD4(byte_string).string_digest() == md4sum
+        assert MD4.from_bytes(byte_string).string_digest() == md4sum
 
 
 # More test cases, comparing to results computed on the following site:
@@ -48,4 +48,18 @@ def test_extended_md4():
         "8db2ba4980fa7d57725e42782ab47b42",
     ]
     for byte_string, md4sum in zip(byte_strings, md4sums):
-        assert MD4(byte_string).string_digest() == md4sum
+        assert MD4.from_bytes(byte_string).string_digest() == md4sum
+
+
+# More test cases, comparing to results computed on the following site:
+# https://www.cmtoinchesconvert.com/online-tools/md4_file_hash.html
+# It allows to hash files instead of strings of text.
+def test_md4_file():
+    filenames = ["md4_test_file.bin", "md4_test_file.txt"]
+    md4sums = [
+        "732868172cbed3f7916701c3c289d743",
+        "d3cb716c9993799d7d30ce118fa8d200",
+    ]
+
+    for filename, md4sum in zip(filenames, md4sums):
+        assert MD4.from_file(filename).string_digest() == md4sum
