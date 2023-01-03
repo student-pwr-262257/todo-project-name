@@ -22,21 +22,25 @@ def _rabin_miller(candidate: int, repeats: int = 30) -> bool:
     Parameters
     ==========
     candidate
-    : tested natural number. Must be odd, greater than 2 and larger than
-      repeats + 2
+    : tested natural number. Must be an odd natural number, greater than 2
     
     repeats
     : number of witnesses taken into account. Ensures that probability of
-      false positive result is less than 4^(-repeats).
+    false positive result is less than 4^(-repeats). Using a number greater
+    than the candidate doesn't improve this.
     """
-    if(candidate<repeats+2):
-        raise ValueError("candidate must be larger than repeats+2")
-
     if candidate % 2 == 0 or candidate <= 1:
         raise ValueError("`candidate` must be odd number greater than 2.")
 
+    if repeats <= 0:
+        raise ValueError("`repeats` must be positive.")
+
+    # Witnesses, number of which is specified by `repeats`, are generated
+    # from the interval containing no numbers greater, than `candidate`.
+    repeats = min(candidate, repeats)
+
     #candidate-1==m*2^d for some positive integers m, d
-    n=len(bin(candidate)[2:])
+    n = candidate.bit_length()
     m=candidate-1
     d=1
     tmp=m/2
