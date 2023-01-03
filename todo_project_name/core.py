@@ -2,11 +2,21 @@
 
 """Objects needed in many different parts of the package."""
 
-def extended_euclid(a:int,b:int)->tuple:
+def extended_euclid(a: int, b: int, /) -> tuple[int, int]:
+    """Return integers x and y, such that x * a + y * b == gcd(a, b).
+
+    Parameters
+    ==========
+    a, b
+    : not all equal to 0
+
+    Notes
+    =====
+    This function uses extended Euclidean algorithm.
     """
-    Function implements extended Euclid algorithm. 
-    Given integers a, b returns integers x, y, such that x*a+y*b==GCD(a,b).
-    """
+    if a == 0 and b == 0:
+        raise ValueError("Greatest common divisor is not defined if all arguments equal 0.")
+
     x,y,s,t = 0,1,1,0
     while a != 0:
         q,r = b//a,b%a
