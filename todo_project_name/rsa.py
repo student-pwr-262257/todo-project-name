@@ -1,6 +1,7 @@
 import secrets
-from find_prime import find_prime
-from core import extended_euclid
+from .find_prime import find_prime
+from .core import extended_euclid
+from pathlib import Path
 
 def euclid(a:int,b:int)->int:
     """
