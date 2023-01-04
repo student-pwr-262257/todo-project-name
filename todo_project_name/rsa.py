@@ -1,4 +1,5 @@
 import secrets
+from typing import TypeVar
 from .find_prime import find_prime
 from pathlib import Path
 import math
@@ -63,10 +64,22 @@ def rsa_key_gen(N: int) -> RSAKeyPair:
 
 def save_key(key: RSAKey, path: Path) -> Path:
     """Save RSA key to the file."""
-    pass  # TODO: IMplement.
+    kind = key.__class__.__name__
+    header = f"-----BEGIN {kind} KEY-----"
+    footer = f"-----END {kind} KEY-----"
+    contents = "\n".join((header, str(key.key), str(key.modulus), footer))
+
+    path.write_text(contents, encoding="utf8")
+
     return path
 
 
-def read_key(path: Path) -> RSAKey:
+RSAKeyVar = TypeVar("RSAKeyVar", RSAKeyPublic, RSAKeyPrivate)
+def read_key(path: Path, key_type: type[RSAKeyVar]) -> RSAKeyVar:
     """Read RSA key from the file."""
-    pass  # TODO: Implement.
+    with path.open("r", encoding="utf8") as file:
+        file.readline()
+        key = file.readline()
+        modulus = file.readline()
+
+    return key_type(key=int(key), modulus=int(modulus))
