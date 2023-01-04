@@ -19,6 +19,12 @@ class TestIsProbablePrime:
         expected = True
         assert actual == expected, "Primes have to pass the test."
 
+    @given(st.integers(max_value=1))
+    def test_on_definite_false(self, candidate):
+        actual = find_prime.is_probable_prime(candidate)
+        expected = False
+        assert actual == expected
+
 
 def main():
     pytest.main([__file__])
