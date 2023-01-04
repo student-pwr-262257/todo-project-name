@@ -25,3 +25,12 @@ def rsa_key_gen(N:int)->tuple:
     if e<0:
         e=n+e
     return ((n,e),(n,d))
+
+def save_key(key: RSAKey, path: Path) -> Path:
+    """Save RSA key to the file."""
+    pass  # TODO: IMplement.
+    return path
+
+def read_key(path: Path) -> RSAKey:
+    """Read RSA key from the file."""
+    pass  # TODO: Implement.
