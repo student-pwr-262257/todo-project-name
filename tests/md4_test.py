@@ -55,7 +55,7 @@ def test_extended_md4():
 # https://www.cmtoinchesconvert.com/online-tools/md4_file_hash.html
 # It allows to hash files instead of strings of text.
 def test_md4_file():
-    filenames = ["md4_test_file.bin", "md4_test_file.txt"]
+    filenames = ["tests/md4_test_file.bin", "tests/md4_test_file.txt"]
     md4sums = [
         "732868172cbed3f7916701c3c289d743",
         "d3cb716c9993799d7d30ce118fa8d200",
