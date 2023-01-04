@@ -1,5 +1,4 @@
 import struct
-import sys
 from abc import ABC, abstractmethod
 
 # some variable names may seem obscure; they were taken directly from
@@ -62,7 +61,10 @@ class MDN(ABC):
         return "".join(f"{byte:02x}" for byte in self.digest)
 
     @staticmethod
-    def _bytes_as_generator(byte_string):
+    def _bytes_as_generator(byte_string: bytes):
+        """ Convert byte string to generator yielding byte strings of length 64.
+        Works similarly to itertools.batched, but ensures that last returned
+        element has length strictly smaller than 64, which serves as break condition. """
         idx = 0
         str_len = len(byte_string)
         while idx + 64 <= str_len:
@@ -73,13 +75,22 @@ class MDN(ABC):
         yield byte_string[idx:]
 
     @staticmethod
-    def _file_bytes_generator(filename):
+    def _file_bytes_generator(filename: str, page_size: int = 4096):
+        """ Create generator yielding pieces of file as byte strings of length 64.
+        Works similarly to itertools.batched, but ensures that last returned
+        element has length strictly smaller than 64, which serves as break condition. """
         with open(filename, "rb") as file:
-            # could be optimized; reading only 64 bytes at a time is quite inefficient.
-            # introducing some buffer in this function should help.
-            while (chunk := file.read(64)) != b"":
-                yield chunk
-            yield b""  # in case of
+            # reading 4KiB at once is much more efficient than 64 bytes.
+            while (buff := file.read(page_size)) != b"":
+                if len(buff) < page_size:  # end of file
+                    yield from MDN._bytes_as_generator(buff)
+                    return
+
+                # Full 4 KiB to divide into chunks
+                for idx in range(0, page_size, 64):
+                    yield buff[idx : idx + 64]
+
+            yield b""  # in case of file size being divisible by 4 KiB
 
     @classmethod
     def from_bytes(cls, byte_string: bytes):

@@ -1,15 +1,13 @@
-import struct
-import sys
-from todo_project_name.mdn import MDN
+from .mdn import MDN
 
 # some variable names may seem obscure; they were taken directly from
-# the article "The MD4 Message Digest Algorithm" by Ronald L. Rivest
+# the article "The MD4 Message Digest Algorithm" by Ronald L. Rivest (1991)
 
 
 class MD4(MDN):
     # magic constants (high-order digits given first == big endian)
-    ROUND_2 = 0x5A827999
-    ROUND_3 = 0x6ED9EBA1
+    ROUND_2 = 0x5a827999
+    ROUND_3 = 0x6ed9eba1
 
     def __init__(self, message_bytes):
         super().run_algoritm(message_bytes)
@@ -74,4 +72,3 @@ class MD4(MDN):
         self.B = (B + self.B) & MD4.last32
         self.C = (C + self.C) & MD4.last32
         self.D = (D + self.D) & MD4.last32
-

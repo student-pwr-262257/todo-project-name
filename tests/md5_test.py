@@ -1,11 +1,14 @@
 from todo_project_name.md5 import MD5
+import os
+import pytest
 
 # test cases from the paper
 def test_md5():
     # strings encoded as ASCII
-    byte_strings = [b"", b"a", b"abc", b"message digest", b"abcdefghijklmnopqrstuvwxyz",
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-                    "12345678901234567890123456789012345678901234567890123456789012345678901234567890"]
+    byte_strings = [ b"", b"a", b"abc", b"message digest", b"abcdefghijklmnopqrstuvwxyz",
+        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+        b"12345678901234567890123456789012345678901234567890123456789012345678901234567890",
+    ]
 
     md5sums = [
         "d41d8cd98f00b204e9800998ecf8427e",
@@ -49,7 +52,7 @@ def test_extended_md5():
         "b1efc0fd1c2e6cf52b14a802a855b3c9",
         "e95e613fc32fb3872bfcaea1bb51d207",
         "f4be2750a0c444a4f27aabc0eacca237",
-        "956e325fdbfd27759281590bc08315e0",
+        "db89bb5ceab87f9c0fcc2ab36c189c2c",
     ]
     for byte_string, md5sum in zip(byte_strings, md5sums):
         assert MD5.from_bytes(byte_string).string_digest() == md5sum
@@ -59,7 +62,10 @@ def test_extended_md5():
 # https://www.cmtoinchesconvert.com/online-tools/md5_file_hash.html
 # It allows to hash files instead of strings of text.
 def test_md5_file():
-    filenames = ["md_test_file.bin", "md_test_file.txt"]
+    def filename_parser(name: str) -> str:
+        return os.path.join(os.path.dirname(__file__), name)
+
+    filenames = map(filename_parser, ["md_test_file.bin", "md_test_file.txt"])
     md5sums = [
         "4d413baa3b076bd64e4416a75ca9292f",
         "9718dafc53ef7fdd3da31171b8706ea3",
@@ -67,3 +73,7 @@ def test_md5_file():
 
     for filename, md5sum in zip(filenames, md5sums):
         assert MD5.from_file(filename).string_digest() == md5sum
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

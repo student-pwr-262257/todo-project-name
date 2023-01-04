@@ -1,4 +1,6 @@
 from todo_project_name.md4 import MD4
+import os
+import pytest
 
 # test cases from the paper
 def test_md4():
@@ -55,7 +57,10 @@ def test_extended_md4():
 # https://www.cmtoinchesconvert.com/online-tools/md4_file_hash.html
 # It allows to hash files instead of strings of text.
 def test_md4_file():
-    filenames = ["md_test_file.bin", "md_test_file.txt"]
+    def filename_parser(name: str) -> str:
+        return os.path.join(os.path.dirname(__file__), name)
+
+    filenames = map(filename_parser, ["md_test_file.bin", "md_test_file.txt"])
     md4sums = [
         "732868172cbed3f7916701c3c289d743",
         "d3cb716c9993799d7d30ce118fa8d200",
@@ -63,3 +68,7 @@ def test_md4_file():
 
     for filename, md4sum in zip(filenames, md4sums):
         assert MD4.from_file(filename).string_digest() == md4sum
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])
