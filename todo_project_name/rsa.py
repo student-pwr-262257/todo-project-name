@@ -1,16 +1,7 @@
 import secrets
 from .find_prime import find_prime
-from .core import extended_euclid
 from pathlib import Path
-
-def euclid(a:int,b:int)->int:
-    """
-    Function implements Euclid algorithm.
-    Given integers a, b returns GCD(a,b).
-    """
-    while b:
-        a,b=b,a%b
-    return a
+import math
 
 def rsa_key_gen(N:int)->tuple:
     """
@@ -28,10 +19,9 @@ def rsa_key_gen(N:int)->tuple:
     n=p*q
     phi=(p-1)*(q-1)
     d=phi
-    while euclid(phi,d)!=1:
+    while math.gcd(phi,d)!=1:
         d=secrets.randbelow(phi)
-    e=extended_euclid(phi,d)[1] #because phi*r+d*e==1 for some integers r,e
+    e=pow(d,-1,phi)
     if e<0:
         e=n+e
     return ((n,e),(n,d))
-
