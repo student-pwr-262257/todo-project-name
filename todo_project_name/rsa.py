@@ -2,6 +2,39 @@ import secrets
 from .find_prime import find_prime
 from pathlib import Path
 import math
+from dataclasses import dataclass
+
+
+@dataclass
+class RSAKey:
+    key: int
+    modulus: int
+
+
+@dataclass
+class RSAKeyPublic(RSAKey):
+    pass
+
+
+@dataclass
+class RSAKeyPrivate(RSAKey):
+    pass
+
+
+@dataclass
+class RSAKeyPair:
+    public: RSAKeyPublic
+    private: RSAKeyPrivate
+
+
+def euclid(a:int,b:int)->int:
+    """
+    Function implements Euclid algorithm.
+    Given integers a, b returns GCD(a,b).
+    """
+    while b:
+        a,b=b,a%b
+    return a
 
 def rsa_key_gen(N:int)->tuple:
     """
@@ -30,6 +63,7 @@ def save_key(key: RSAKey, path: Path) -> Path:
     """Save RSA key to the file."""
     pass  # TODO: IMplement.
     return path
+
 
 def read_key(path: Path) -> RSAKey:
     """Read RSA key from the file."""
