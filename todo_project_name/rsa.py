@@ -36,17 +36,15 @@ def euclid(a:int,b:int)->int:
         a,b=b,a%b
     return a
 
-def rsa_key_gen(N:int)->tuple:
-    """
-    Generation of RSA protocol keys. 
+def rsa_key_gen(N: int) -> RSAKeyPair:
+    """Generate RSA key pair.
 
-    Takes number `N` and returns tuple (public key, private key).
-    Public key is in the form of (n, e) 
-    and private one is in the form of (n, d), where n is a 2*N-bit modulus.
+    Takes number `N` and RSAKeyPair with (2 * N)-bit modulus.
     
-    Notes
-    =====
-    Argument `N` determines the strength of the protocol.
+    Parameters
+    ==========
+    `N`
+    : determines the strength of the protocol.
     """
     p,q=find_prime(N),find_prime(N)
     n=p*q
@@ -57,7 +55,11 @@ def rsa_key_gen(N:int)->tuple:
     e=pow(d,-1,phi)
     if e<0:
         e=n+e
-    return ((n,e),(n,d))
+
+    public_key = RSAKeyPublic(e, n)
+    private_key = RSAKeyPrivate(d, n)
+
+    return RSAKeyPair(public_key, private_key)
 
 def save_key(key: RSAKey, path: Path) -> Path:
     """Save RSA key to the file."""
