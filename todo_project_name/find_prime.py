@@ -45,8 +45,8 @@ def _rabin_miller(candidate: int, repeats: int = 30) -> bool:
     
     repeats
     : number of witnesses taken into account. Ensures that probability of
-    false positive result is less than 4^(-repeats). Using a number greater
-    than the candidate doesn't improve this.
+    false positive result is less than 4^(-repeats). 
+    If repeats >= candidate-2, then repeats=candidate-2 is assumed.
     """
     if candidate % 2 == 0 or candidate <= 1:
         raise ValueError("`candidate` must be odd number greater than 2.")
@@ -56,7 +56,7 @@ def _rabin_miller(candidate: int, repeats: int = 30) -> bool:
 
     # Witnesses, number of which is specified by `repeats`, are generated
     # from the interval containing no numbers greater, than `candidate`.
-    repeats = min(candidate, repeats)
+    repeats = min(candidate-2, repeats)
 
     #candidate-1==m*2^d for some positive integers m, d
     n = candidate.bit_length()

@@ -4,7 +4,8 @@ from .find_prime import find_prime
 from pathlib import Path
 import math
 from dataclasses import dataclass
-
+from .md4 import MD4
+from .md5 import MD5
 
 @dataclass
 class RSAKey:
@@ -40,7 +41,7 @@ def euclid(a:int,b:int)->int:
 def rsa_key_gen(N: int) -> RSAKeyPair:
     """Generate RSA key pair.
 
-    Takes number `N` and RSAKeyPair with (2 * N)-bit modulus.
+    Takes number `N` and returns RSAKeyPair with (2 * N)-bit modulus.
     
     Parameters
     ==========
@@ -54,8 +55,6 @@ def rsa_key_gen(N: int) -> RSAKeyPair:
     while math.gcd(phi,d)!=1:
         d=secrets.randbelow(phi)
     e=pow(d,-1,phi)
-    if e<0:
-        e=n+e
 
     public_key = RSAKeyPublic(e, n)
     private_key = RSAKeyPrivate(d, n)
@@ -83,3 +82,59 @@ def read_key(path: Path, key_type: type[RSAKeyVar]) -> RSAKeyVar:
         modulus = file.readline()
 
     return key_type(key=int(key), modulus=int(modulus))
+
+def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: str ='MD4') -> str:
+    """
+    Function returns a digital singnature based on the RSA protocol.
+    
+    Parameters
+    ==========
+    message
+    : string message to be singed
+    
+    key
+    : RSA private key
+
+    algorithm
+    : string to specify the hashing algorithm. 
+    Available algorithms: MD4, MD5
+    """
+    if algorithm == "MD5":
+        hashed = MD5.from_bytes(message.encode('utf-8')).string_digest()
+    else:
+        hashed = MD4.from_bytes(message.encode('utf-8')).string_digest()
+    hashed = int(hashed,16)
+    signature = pow(hashed, key.key, key.modulus)
+    return hex(signature)
+
+def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: str ='MD4'):
+    """
+    Function verifies digital singnature of a message basing on the RSA protocol.
+    It compares decoded signature with hashed message 
+    and returns True if they are the same, otherwise False.
+    
+    Parameters
+    ==========
+    message
+    : string message 
+
+    signature
+    : signature for verification
+    
+    key
+    : RSA public key
+
+    algorithm
+    : string to specify the hashing algorithm. 
+    Available algorithms: MD4, MD5
+    
+    """
+    if algorithm == "MD5":
+        hashed=MD5.from_bytes(message.encode('utf-8')).string_digest()
+    else:
+        hashed = MD4.from_bytes(message.encode('utf-8')).string_digest()
+    hashed = int(hashed,16)
+    uncoded = pow(int(signature,16), key.key, key.modulus)
+    if hashed == uncoded:
+        return True
+    return False
