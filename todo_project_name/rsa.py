@@ -1,11 +1,12 @@
 import secrets
-from typing import TypeVar
+from typing import TypeVar, Union
 from .find_prime import find_prime
 from pathlib import Path
 import math
 from dataclasses import dataclass
 from .md4 import MD4
 from .md5 import MD5
+
 
 @dataclass
 class RSAKey:
@@ -83,7 +84,7 @@ def read_key(path: Path, key_type: type[RSAKeyVar]) -> RSAKeyVar:
 
     return key_type(key=int(key), modulus=int(modulus))
 
-def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: str ='MD4') -> str:
+def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: Union[MD4,MD5] = MD4) -> str:
     """
     Function returns a digital singnature based on the RSA protocol.
     
@@ -99,15 +100,12 @@ def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: str ='MD4') -> str:
     : string to specify the hashing algorithm. 
     Available algorithms: MD4, MD5
     """
-    if algorithm == "MD5":
-        hashed = MD5.from_bytes(message.encode('utf-8')).string_digest()
-    else:
-        hashed = MD4.from_bytes(message.encode('utf-8')).string_digest()
-    hashed = int(hashed,16)
+    hashed = algorithm.from_bytes(message.encode('utf-8')).string_digest()
+    hashed = int(hashed, 16)
     signature = pow(hashed, key.key, key.modulus)
     return hex(signature)
 
-def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: str ='MD4'):
+def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: Union[MD4,MD5] = MD4):
     """
     Function verifies digital singnature of a message basing on the RSA protocol.
     It compares decoded signature with hashed message 
@@ -129,12 +127,9 @@ def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: str =
     Available algorithms: MD4, MD5
     
     """
-    if algorithm == "MD5":
-        hashed=MD5.from_bytes(message.encode('utf-8')).string_digest()
-    else:
-        hashed = MD4.from_bytes(message.encode('utf-8')).string_digest()
-    hashed = int(hashed,16)
-    uncoded = pow(int(signature,16), key.key, key.modulus)
+    hashed = algorithm.from_bytes(message.encode('utf-8')).string_digest()
+    hashed = int(hashed, 16)
+    uncoded = pow(int(signature, 16), key.key, key.modulus)
     if hashed == uncoded:
         return True
     return False
