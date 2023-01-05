@@ -8,4 +8,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: python3 -m pip install poetry
+      - run: poetry install
       - run: poetry run python3 -m mypy .
