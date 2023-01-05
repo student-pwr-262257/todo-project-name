@@ -30,15 +30,6 @@ class RSAKeyPair:
     private: RSAKeyPrivate
 
 
-def euclid(a:int,b:int)->int:
-    """
-    Function implements Euclid algorithm.
-    Given integers a, b returns GCD(a,b).
-    """
-    while b:
-        a,b=b,a%b
-    return a
-
 def rsa_key_gen(N: int) -> RSAKeyPair:
     """Generate RSA key pair.
 

@@ -16,6 +16,7 @@ bitarray = ">=2.6.1"
 pytest = "^7.2.0"
 hypothesis = "^6.61.0"
 sympy = "^1.11.1"
+mypy = "^0.991"
 
 
 [tool.poetry.group.dev.dependencies]
