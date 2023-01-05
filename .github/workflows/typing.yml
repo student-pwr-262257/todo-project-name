@@ -8,5 +8,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: python3 -m pip install poetry
+      - uses: actions/setup-python@v4
+        with:
+          cache: poetry
       - run: poetry install
       - run: poetry run python3 -m mypy --package todo_project_name --package tests
