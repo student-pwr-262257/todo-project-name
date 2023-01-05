@@ -75,7 +75,7 @@ def read_key(path: Path, key_type: type[RSAKeyVar]) -> RSAKeyVar:
 
     return key_type(key=int(key), modulus=int(modulus))
 
-def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: Union[MD4,MD5] = MD4) -> str:
+def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: Union[MD4, MD5] = MD4) -> str:
     """
     Function returns a digital singnature based on the RSA protocol.
     
@@ -96,7 +96,7 @@ def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: Union[MD4,MD5] = MD4) 
     signature = pow(hashed, key.key, key.modulus)
     return hex(signature)
 
-def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: Union[MD4,MD5] = MD4):
+def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: Union[MD4, MD5] = MD4):
     """
     Function verifies digital singnature of a message basing on the RSA protocol.
     It compares decoded signature with hashed message 
