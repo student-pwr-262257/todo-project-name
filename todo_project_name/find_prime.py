@@ -31,7 +31,7 @@ def is_probable_prime(candidate: int) -> bool:
     for number in primes:
         if candidate%number==0:
             return False
-    return _rabin_miller(candidate=candidate, repeats=5)
+    return _rabin_miller(candidate=candidate)
 
 def _rabin_miller(candidate: int, repeats: int = 30) -> bool:
     """Return the result of Rabin-Miller test.
