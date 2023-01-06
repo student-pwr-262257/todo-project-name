@@ -85,15 +85,22 @@ def _rabin_miller(candidate: int, repeats: int = 30) -> bool:
             return False
     return True
 
-def find_prime(n:int)->int:
-    """
-    With high probability returns a n-bit prime number.
-    """
-    passed=False
-    while passed is False:
 
-        candidate=2**(n-1)+secrets.randbits(n-1)
+def find_prime(n: int) -> int:
+    """Return `n`-bit probable prime.
 
+    Parameters
+    ==========
+    `n`
+    : number of bits, must be greater than 1,
+      because otherwise such a prime doesn't exist.
+    """
+    if n <= 1:
+        raise ValueError("The number of bits must be greater than 1.")
+
+    while True:
+        # Generate a number with `n` random bits, possibly with leading 0s,
+        # therefore set first bit to 1.
+        candidate = secrets.randbits(n) | (1 << n - 1)
         if is_probable_prime(candidate):
-            passed=True
-    return candidate
+            return candidate
