@@ -26,12 +26,23 @@ class TestIsProbablePrime:
         assert actual == expected
 
 
-# We are required to generate 128-bit keys, this should be enough.
-# TODO: Check thoroughly when ePortal is working.
-@given(st.integers(max_value=129))
-def test_find_prime(n_bits):
-    found = find_prime.find_prime(n_bits)
-    assert sp.isprime(found)
+class TestFindPrime:
+    # We are required to generate 128-bit keys, this should be enough.
+    # TODO: Check thoroughly when ePortal is working.
+    @given(st.integers(min_value=2, max_value=129))
+    def test_if_is_probable_prime(self, n_bits):
+        found = find_prime.find_prime(n_bits)
+        assert sp.isprime(found)
+
+    @given(st.integers(min_value=2, max_value=129))
+    def test_if_has_correct_number_of_bits(self, n_bits):
+        found = find_prime.find_prime(n_bits)
+        assert found.bit_length() == n_bits
+
+    @given(st.integers(max_value=1))
+    def test_on_invalid(self, n_bits):
+        with pytest.raises(ValueError):
+            find_prime.find_prime(n_bits)
 
 
 def main():
