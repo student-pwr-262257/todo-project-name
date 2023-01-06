@@ -26,6 +26,14 @@ class TestIsProbablePrime:
         assert actual == expected
 
 
+# We are required to generate 128-bit keys, this should be enough.
+# TODO: Check thoroughly when ePortal is working.
+@given(st.integers(max_value=129))
+def test_find_prime(n_bits):
+    found = find_prime.find_prime(n_bits)
+    assert sp.isprime(found)
+
+
 def main():
     pytest.main([__file__])
 
