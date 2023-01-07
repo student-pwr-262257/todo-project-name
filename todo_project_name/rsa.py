@@ -41,13 +41,11 @@ def rsa_key_gen(N: int) -> RSAKeyPair:
     : determines the strength of the protocol.
     """
     p,q=find_prime(N),find_prime(N)
-    while p==q:            #make sure that p!=q
-        q=find_prime(N)
     n=p*q
     phi=(p-1)*(q-1)
     d=phi
     while math.gcd(phi,d)!=1:
-        d=secrets.randbelow(phi-2)+2  # rand d in range 2, 3,..., phi-1
+        d=secrets.randbelow(phi)
     e=pow(d,-1,phi)
 
     public_key = RSAKeyPublic(e, n)
@@ -77,7 +75,7 @@ def read_key(path: Path, key_type: type[RSAKeyVar]) -> RSAKeyVar:
 
     return key_type(key=int(key), modulus=int(modulus))
 
-def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: type[Union[MD4, MD5]] = type[MD4]) -> str:
+def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: Union[MD4, MD5] = MD4) -> str:
     """
     Function returns a digital singnature based on the RSA protocol.
     
@@ -90,15 +88,15 @@ def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: type[Union[MD4, MD5]] 
     : RSA private key
 
     algorithm
-    : hash method. Default: MD4.
-    Available algorithms: MD4, MD5.
+    : string to specify the hashing algorithm. 
+    Available algorithms: MD4, MD5
     """
     hashed = algorithm.from_bytes(message.encode('utf-8')).string_digest()
     hashed = int(hashed, 16)
     signature = pow(hashed, key.key, key.modulus)
     return hex(signature)
 
-def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: type[Union[MD4, MD5]] = MD4):
+def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: Union[MD4, MD5] = MD4):
     """
     Function verifies digital singnature of a message basing on the RSA protocol.
     It compares decoded signature with hashed message 
@@ -116,12 +114,12 @@ def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: type[
     : RSA public key
 
     algorithm
-    : hash algorithm. Default: MD4.
-    Available algorithms: MD4, MD5.
+    : string to specify the hashing algorithm. 
+    Available algorithms: MD4, MD5
     
     """
     hashed = algorithm.from_bytes(message.encode('utf-8')).string_digest()
-    hashed = int(hashed, 16) % key.modulus
+    hashed = int(hashed, 16)
     uncoded = pow(int(signature, 16), key.key, key.modulus)
     if hashed == uncoded:
         return True
