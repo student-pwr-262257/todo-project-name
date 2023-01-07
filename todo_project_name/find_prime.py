@@ -98,9 +98,13 @@ def find_prime(n: int) -> int:
     if n <= 1:
         raise ValueError("The number of bits must be greater than 1.")
 
+    tested = set()
     while True:
         # Generate a number with `n` random bits, possibly with leading 0s,
         # therefore set first bit to 1.
         candidate = secrets.randbits(n) | (1 << n - 1)
+        if candidate in tested:
+            continue
         if is_probable_prime(candidate):
             return candidate
+        tested.add(candidate)
