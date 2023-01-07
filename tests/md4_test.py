@@ -58,7 +58,7 @@ def test_extended_md4():
 # It allows to hash files instead of strings of text.
 def test_md4_file():
     def filename_parser(name: str) -> str:
-        return os.path.join(os.path.dirname(__file__), name)
+        return os.path.join(os.path.dirname(__file__), "data", name)
 
     filenames = map(filename_parser, ["md_test_file.bin", "md_test_file.txt"])
     md4sums = [
