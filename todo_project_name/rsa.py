@@ -61,7 +61,7 @@ def save_key(key: RSAKey, path: Path) -> Path:
     kind = key.__class__.__name__
     header = f"-----BEGIN {kind} KEY-----"
     footer = f"-----END {kind} KEY-----"
-    contents = "\n".join((header, str(key.key), str(key.modulus), footer))
+    contents = "\n".join((header, str(key.key), str(key.modulus), str(key.id), footer))
 
     path.write_text(contents, encoding="utf8")
 
@@ -72,11 +72,13 @@ RSAKeyVar = TypeVar("RSAKeyVar", RSAKeyPublic, RSAKeyPrivate)
 def read_key(path: Path, key_type: Type[RSAKeyVar]) -> RSAKeyVar:
     """Read RSA key from the file."""
     with path.open("r", encoding="utf8") as file:
+        # Skip the heading.
         file.readline()
-        key = file.readline()
-        modulus = file.readline()
+        key = file.readline().strip()
+        modulus = file.readline().strip()
+        id = file.readline().strip()
 
-    return key_type(key=int(key), modulus=int(modulus))
+    return key_type(key=int(key), modulus=int(modulus), id=str(id) if id != "None" else None)
 
 def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: Type[Union[MD4, MD5]] = MD4) -> str:
     """
