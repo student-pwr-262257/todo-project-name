@@ -1,5 +1,5 @@
 import secrets
-from typing import TypeVar, Union, Type
+from typing import TypeVar, Union, Type, Optional
 from .find_prime import find_prime
 from pathlib import Path
 import math
@@ -12,6 +12,7 @@ from .md5 import MD5
 class RSAKey:
     key: int
     modulus: int
+    id: Optional[str] = None
 
 
 @dataclass
