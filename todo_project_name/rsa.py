@@ -6,21 +6,46 @@ import math
 from dataclasses import dataclass
 from .md4 import MD4
 from .md5 import MD5
+from abc import ABC
 
 
-@dataclass
-class RSAKey:
-    key: int
-    modulus: int
-    id: Optional[str] = None
+class RSAKey(ABC):
+    def __init__(self, key: int, modulus: int, id: Optional[str] = None) -> None:
+        """Create a new instance.
+
+        Parameters
+        ==========
+        id:
+            cannot have white space at its ends or be an empty string.
+        """
+        if id is not None:
+            if id == "":
+                raise ValueError("The string cannot be empty.")
+            if id != id.strip():
+                # TODO: Consider lifting this constraint with a more flexible serialization.
+                # Is it needed?
+                raise ValueError("`id` cannot have white space at its ends.")
+
+        self.key = key
+        self.modulus = modulus
+        self.id = id
+
+    def __repr__(self) -> str:
+        name = self.__class__.__name__
+        return f"{name}(key={self.key!r}, modulus={self.modulus!r}, id={self.id!r})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, RSAKey):
+            return NotImplemented
+        if not isinstance(other, type(self)):
+            return False
+        return self.key == other.key and self.modulus == other.modulus
 
 
-@dataclass
 class RSAKeyPublic(RSAKey):
     pass
 
 
-@dataclass
 class RSAKeyPrivate(RSAKey):
     pass
 
@@ -61,6 +86,7 @@ def save_key(key: RSAKey, path: Path) -> Path:
     kind = key.__class__.__name__
     header = f"-----BEGIN {kind} KEY-----"
     footer = f"-----END {kind} KEY-----"
+    # TODO: Consider serialization method allowing white space in `RSAKey.id`. Is it needed?
     contents = "\n".join((header, str(key.key), str(key.modulus), str(key.id), footer))
 
     path.write_text(contents, encoding="utf8")
