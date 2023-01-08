@@ -6,19 +6,18 @@ from todo_project_name.md4 import MD4
 from todo_project_name.md5 import MD5
 # Third-party
 import pytest
+from hypothesis import given, strategies as st
 
 
-def test_rsa_file_operations(tmp_path):
-    KEY_TYPE = rsa.RSAKeyPublic
-    key_types = {rsa.RSAKeyPublic, rsa.RSAKeyPrivate}
-    other_key_type = key_types - {KEY_TYPE}
-
-    key = KEY_TYPE(123, 200)  # TODO: Generate a key. Mock?
+@given(key=st.from_type(rsa.RSAKey))
+def test_rsa_file_operations(tmp_path_factory, key):
+    tmp_path = tmp_path_factory.mktemp("keys")
+    key_type = type(key)
     key_path = tmp_path / "test.key"
     rsa.save_key(key, key_path)
-    read_key = rsa.read_key(key_path, KEY_TYPE)
+    read_key = rsa.read_key(key_path, key_type)
     assert key == read_key, "Written and read keys are not the same."
-    assert key != other_key_type, "The exact type should be consistent between reads and writes."
+    assert type(key) is type(read_key), "The exact type should be consistent between reads and writes."
 
 
 def test_rsa_sign():
