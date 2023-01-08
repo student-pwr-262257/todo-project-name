@@ -8,8 +8,10 @@ from todo_project_name.md5 import MD5
 import pytest
 from hypothesis import given, strategies as st
 
+ids = st.text(min_size=1).filter(lambda s: s == s.strip())
+rsa_keys = st.builds(rsa.RSAKey, id=ids)
 
-@given(key=st.from_type(rsa.RSAKey))
+@given(key=rsa_keys)
 def test_rsa_file_operations(tmp_path_factory, key):
     tmp_path = tmp_path_factory.mktemp("keys")
     key_type = type(key)
@@ -17,7 +19,9 @@ def test_rsa_file_operations(tmp_path_factory, key):
     rsa.save_key(key, key_path)
     read_key = rsa.read_key(key_path, key_type)
     assert key == read_key, "Written and read keys are not the same."
-    assert type(key) is type(read_key), "The exact type should be consistent between reads and writes."
+    assert type(key) is type(
+        read_key
+    ), "The exact type should be consistent between reads and writes."
 
 
 def test_rsa_sign():
