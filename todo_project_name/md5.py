@@ -1,5 +1,6 @@
 from .mdn import MDN
 from math import sin, floor
+from typing import Iterator, List
 
 # some variable names may seem obscure; they were taken directly from
 # the article "The MD5 Message-Digest Algorithm" by Ronald L. Rivest (1992)
@@ -7,58 +8,90 @@ from math import sin, floor
 
 
 class MD5(MDN):
+    """Class computing MD5 message digest. Works for little-endian architecture.
+
+    It is recommended to use methods `MD5.from_bytes` or `MD5.from_file`
+    to create new objects.
+
+    To get message digest as `str` use `string_digest`.
+    To get message digest as `bytes` read `self.digest` attribute.
+    """
+
     # magic constants
     T = list(floor(4294967296 * abs(sin(i + 1))) for i in range(64))
 
-    def __init__(self, message_bytes):
-        super().run_algoritm(message_bytes)
+    def __init__(self, message_bytes: Iterator[bytes]):
+        """It is recommended to use methods `MD5.from_bytes` or `MD5.from_file`
+        to create new objects.
+
+        Parameters
+        ==========
+        message_bytes
+        : Iterator yielding `bytes` of length exactly 64. Last yielded
+        byte string must have length strictly less than 64 (empty byte string
+        may be sometimes necessary).
+        """
+        super()._run_algoritm(message_bytes)
 
     # bitwise conditional
     @staticmethod
     def f(X, Y, Z):
+        """Function used in round 1 of algorithm."""
         return (X & Y) | ((~X) & Z)
 
     # bitwise conditional
     @staticmethod
     def g(X, Y, Z):
+        """Function used in round 2 of algorithm."""
         return (X & Z) | (Y & (~Z))
 
     # bitwise XOR for 3 inputs (parity function)
     @staticmethod
     def h(X, Y, Z):
+        """Function used in round 3 of algorithm."""
         return X ^ Y ^ Z
 
     @staticmethod
     def i(X, Y, Z):
+        """Function used in round 4 of algorithm."""
         return Y ^ (X | (~Z))
 
     @staticmethod
     def round_1_op(A, B, C, D, X, s, i):
+        """Operation of first round of the algorithm."""
         return (
             B + MDN.l_roll((A + MD5.f(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
         ) & MDN.last32
 
     @staticmethod
     def round_2_op(A, B, C, D, X, s, i):
+        """Operation of second round of the algorithm."""
         return (
             B + MDN.l_roll((A + MD5.g(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
         ) & MDN.last32
 
     @staticmethod
     def round_3_op(A, B, C, D, X, s, i):
+        """Operation of third round of the algorithm."""
         return (
             B + MDN.l_roll((A + MD5.h(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
         ) & MDN.last32
 
     @staticmethod
     def round_4_op(A, B, C, D, X, s, i):
+        """Operation of fourth round of the algorithm."""
         return (
             B + MDN.l_roll((A + MD5.i(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
         ) & MDN.last32
 
-    # X is array with 16 '4-byte words', that is
-    # integers whose representation is at most 4 bytes.
-    def _update(self, X) -> bytes:
+    def _update(self, X: List[int]) -> None:
+        """Update internal registers according to MD5 specification:
+        do all of the "processing of single 16-word block" from the paper.
+
+        Parameters
+        ==========
+        X: list of 16 32-bit unsigned integers (4-byte words) to be processed.
+        """
         A = self.A  # self.A is `AA` from the paper
         B = self.B  # the rest accordingly.
         C = self.C
