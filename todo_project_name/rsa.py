@@ -1,5 +1,5 @@
 import secrets
-from typing import TypeVar, Union, Type, Optional
+from typing import Any, TypeVar, Union, Type, Optional
 from .find_prime import find_prime
 from pathlib import Path
 import math
@@ -122,7 +122,7 @@ def rsa_sign(message: str, key: RSAKeyPrivate, algorithm: Type[Union[MD4, MD5]] 
     : hash method. Default: MD4.
     Available algorithms: MD4, MD5.
     """
-    hashed = algorithm.from_bytes(message.encode('utf-8')).string_digest()
+    hashed: Any = algorithm.from_bytes(message.encode('utf-8')).string_digest()
     hashed = int(hashed, 16)
     signature = pow(hashed, key.key, key.modulus)
     return hex(signature)
@@ -149,7 +149,7 @@ def rsa_verify(message: str, signature: str, key: RSAKeyPublic, algorithm: Type[
     Available algorithms: MD4, MD5.
     
     """
-    hashed = algorithm.from_bytes(message.encode('utf-8')).string_digest()
+    hashed: Any = algorithm.from_bytes(message.encode('utf-8')).string_digest()
     hashed = int(hashed, 16) % key.modulus
     uncoded = pow(int(signature, 16), key.key, key.modulus)
     if hashed == uncoded:
