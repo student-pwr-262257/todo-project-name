@@ -14,7 +14,7 @@ class MDN(ABC):
     last32 = 0xffffffff
     last64 = 0xffffffffffffffff
 
-    @abstractmethod
+
     def __init__(self, message_bytes: Iterator[bytes]):
         """All derived classes should have constructor with this signature.
 
@@ -26,7 +26,9 @@ class MDN(ABC):
         may be sometimes necessary). Class computes message digest of these bytes
         as if they were just single byte string.
         """
-        raise NotImplementedError("Base class is abstract.")
+        self._A = self._B = self._C = self._D = 0
+        self.__digest = None
+        self._run_algoritm(message_bytes)
 
     def _run_algoritm(self, message_bytes: Iterator[bytes]) -> None:
         """Common structure of md4 and md5 algorithms.
@@ -43,12 +45,11 @@ class MDN(ABC):
         This function uses `_update` method, which should be implemented by
         derived classes.
         """
-        self.digest = None
         # preparing for the algorithm
-        self.A = 0x67452301
-        self.B = 0xefcdab89
-        self.C = 0x98badcfe
-        self.D = 0x10325476
+        self._A = 0x67452301
+        self._B = 0xefcdab89
+        self._C = 0x98badcfe
+        self._D = 0x10325476
 
         # running the algorithm
         bits_no = 0
@@ -83,12 +84,17 @@ class MDN(ABC):
         self._update(X)
 
         # getting the result
-        self.digest = struct.pack("<4I", self.A, self.B, self.C, self.D)
+        self.__digest = struct.pack("<4I", self._A, self._B, self._C, self._D)
         # done
 
     def string_digest(self) -> str:
         """Returns string representation of message digest."""
-        return "".join(f"{byte:02x}" for byte in self.digest)
+        return "".join(f"{byte:02x}" for byte in self.__digest)
+
+    @property
+    def digest(self):
+        """The message digest as bytes."""
+        return self.__digest
 
     @staticmethod
     def _bytes_as_generator(byte_string: bytes) -> Iterator[bytes]:
