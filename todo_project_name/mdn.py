@@ -27,7 +27,7 @@ class MDN(ABC):
         as if they were just single byte string.
         """
         self._A = self._B = self._C = self._D = 0
-        self.__digest = None
+        self.__digest = b""
         self._run_algoritm(message_bytes)
 
     def _run_algoritm(self, message_bytes: Iterator[bytes]) -> None:
@@ -187,7 +187,7 @@ class MDN(ABC):
         return ((X << s) & MDN.last32) | (X >> (32 - s))
 
     @abstractmethod
-    def _update(self, X: List[int]) -> bytes:
+    def _update(self, X: List[int]) -> None:
         """This method should update internal registers according to MD* specification.
         It should do all of the "processing of single 16-word block" from the paper.
 
