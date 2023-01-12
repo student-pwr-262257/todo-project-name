@@ -11,9 +11,8 @@ class MDN(ABC):
     """Superclass of MD4 and MD5. Works for little-endian architecture."""
 
     padding = 0x80.to_bytes(64, "little")  # 10000...000 -- 512 bits in total
-    last32 = 0xffffffff
-    last64 = 0xffffffffffffffff
-
+    last32 = 0xFFFFFFFF
+    last64 = 0xFFFFFFFFFFFFFFFF
 
     def __init__(self, message_bytes: Iterator[bytes]):
         """All derived classes should have constructor with this signature.
@@ -47,8 +46,8 @@ class MDN(ABC):
         """
         # preparing for the algorithm
         self._A = 0x67452301
-        self._B = 0xefcdab89
-        self._C = 0x98badcfe
+        self._B = 0xEFCDAB89
+        self._C = 0x98BADCFE
         self._D = 0x10325476
 
         # running the algorithm
@@ -59,7 +58,8 @@ class MDN(ABC):
             self._update(X)
             bits_no += 512
 
-        # padding and running last iteration (or 2 in the case of empty padding or over 56 bytes left)
+        # padding and running last iteration (or 2 in the case of empty padding or
+        # over 56 bytes left)
         message = chunk  # remaining bytes
         left = len(chunk)
         # b == 8 * left
@@ -107,7 +107,8 @@ class MDN(ABC):
         : sequence of bytes to be converted to iterator.
         """
         # Works similarly to itertools.batched, but ensures that last returned
-        # element has length strictly smaller than 64, which serves as break condition.
+        # element has length strictly smaller than 64, which serves as break
+        # condition.
         idx = 0
         str_len = len(byte_string)
         while idx + 64 <= str_len:
@@ -130,12 +131,14 @@ class MDN(ABC):
         : path to existing file from which bytes will be read.
 
         page_size
-        : number of bytes read from file at once. Must be positive. This is optimization
-        parameter - regardless of its value, created generator always yields byte strings
-        of length exactly 64, and last one strictly less than 64. Default value is 4096 (4KiB).
+        : number of bytes read from file at once. Must be positive. This is
+        optimization parameter - regardless of its value, created generator always
+        yields byte strings of length exactly 64, and last one strictly less than
+        64. Default value is 4096 (4KiB).
         """
         # Works similarly to itertools.batched, but ensures that last returned
-        # element has length strictly smaller than 64, which serves as break condition.
+        # element has length strictly smaller than 64, which serves as break
+        # condition.
         with open(filename, "rb") as file:
             # reading 4KiB at once is much more efficient than 64 bytes.
             while (buff := file.read(page_size)) != b"":
@@ -188,11 +191,14 @@ class MDN(ABC):
 
     @abstractmethod
     def _update(self, X: List[int]) -> None:
-        """This method should update internal registers according to MD* specification.
-        It should do all of the "processing of single 16-word block" from the paper.
+        """This method should update internal registers according to MD*
+        specification. It should do all of the "processing of single 16-word block"
+        from the paper.
 
         Parameters
         ==========
         X: list of 16 32-bit unsigned integers to be processed.
         """
-        raise NotImplementedError("Derived class should implement this method.")
+        raise NotImplementedError(
+            "Derived class should implement this method."
+        )

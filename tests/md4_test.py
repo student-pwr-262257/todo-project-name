@@ -5,7 +5,13 @@ import pytest
 # test cases from the paper
 def test_md4():
     # strings encoded as ASCII
-    byte_strings = [b"", b"a", b"abc", b"message digest", b"abcdefghijklmnopqrstuvwxyz"]
+    byte_strings = [
+        b"",
+        b"a",
+        b"abc",
+        b"message digest",
+        b"abcdefghijklmnopqrstuvwxyz",
+    ]
 
     md4sums = [
         "31d6cfe0d16ae931b73c59d7e0c089c0",
@@ -20,10 +26,10 @@ def test_md4():
 
 
 # More test cases, comparing to results computed on the following site:
-# http://www.unit-conversion.info/texttools/md4/
-# I noticed that some sites on the internet produce hashes different than ones
-# presented as examples in the paper. The one above however is consistent with it.
-# Perhaps it is fault of text encoding. I assume that the paper uses ASCII.
+# http://www.unit-conversion.info/texttools/md4/ I noticed that some sites on
+# the internet produce hashes different than ones presented as examples in the
+# paper. The one above however is consistent with it. Perhaps it is fault of
+# text encoding. I assume that the paper uses ASCII.
 def test_extended_md4():
     # It is important to check byte strings longer than 56 bytes,
     # as well as ones of length mod 64 equal to 56.

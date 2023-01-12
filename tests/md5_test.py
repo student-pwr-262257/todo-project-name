@@ -5,7 +5,12 @@ import pytest
 # test cases from the paper
 def test_md5():
     # strings encoded as ASCII
-    byte_strings = [ b"", b"a", b"abc", b"message digest", b"abcdefghijklmnopqrstuvwxyz",
+    byte_strings = [
+        b"",
+        b"a",
+        b"abc",
+        b"message digest",
+        b"abcdefghijklmnopqrstuvwxyz",
         b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
         b"12345678901234567890123456789012345678901234567890123456789012345678901234567890",
     ]

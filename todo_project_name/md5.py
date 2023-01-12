@@ -60,28 +60,32 @@ class MD5(MDN):
     def _round_1_op(A, B, C, D, X, s, i):
         """Operation of first round of the algorithm."""
         return (
-            B + MDN.l_roll((A + MD5._f(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
+            B
+            + MDN.l_roll((A + MD5._f(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
         ) & MDN.last32
 
     @staticmethod
     def _round_2_op(A, B, C, D, X, s, i):
         """Operation of second round of the algorithm."""
         return (
-            B + MDN.l_roll((A + MD5._g(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
+            B
+            + MDN.l_roll((A + MD5._g(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
         ) & MDN.last32
 
     @staticmethod
     def _round_3_op(A, B, C, D, X, s, i):
         """Operation of third round of the algorithm."""
         return (
-            B + MDN.l_roll((A + MD5._h(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
+            B
+            + MDN.l_roll((A + MD5._h(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
         ) & MDN.last32
 
     @staticmethod
     def _round_4_op(A, B, C, D, X, s, i):
         """Operation of fourth round of the algorithm."""
         return (
-            B + MDN.l_roll((A + MD5._i(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
+            B
+            + MDN.l_roll((A + MD5._i(B, C, D) + X + MD5.T[i]) & MDN.last32, s)
         ) & MDN.last32
 
     def _update(self, X: List[int]) -> None:
@@ -108,22 +112,38 @@ class MD5(MDN):
         for k in range(4):
             A = MD5._round_2_op(A, B, C, D, X[(1 + 4 * k) % 16], 5, 16 + 4 * k)
             D = MD5._round_2_op(D, A, B, C, X[(6 + 4 * k) % 16], 9, 17 + 4 * k)
-            C = MD5._round_2_op(C, D, A, B, X[(11 + 4 * k) % 16], 14, 18 + 4 * k)
-            B = MD5._round_2_op(B, C, D, A, X[(0 + 4 * k) % 16], 20, 19 + 4 * k)
+            C = MD5._round_2_op(
+                C, D, A, B, X[(11 + 4 * k) % 16], 14, 18 + 4 * k
+            )
+            B = MD5._round_2_op(
+                B, C, D, A, X[(0 + 4 * k) % 16], 20, 19 + 4 * k
+            )
 
         # round 3
         for k in range(4):
             A = MD5._round_3_op(A, B, C, D, X[(5 - 4 * k) % 16], 4, 32 + 4 * k)
-            D = MD5._round_3_op(D, A, B, C, X[(8 - 4 * k) % 16], 11, 33 + 4 * k)
-            C = MD5._round_3_op(C, D, A, B, X[(11 - 4 * k) % 16], 16, 34 + 4 * k)
-            B = MD5._round_3_op(B, C, D, A, X[(14 - 4 * k) % 16], 23, 35 + 4 * k)
+            D = MD5._round_3_op(
+                D, A, B, C, X[(8 - 4 * k) % 16], 11, 33 + 4 * k
+            )
+            C = MD5._round_3_op(
+                C, D, A, B, X[(11 - 4 * k) % 16], 16, 34 + 4 * k
+            )
+            B = MD5._round_3_op(
+                B, C, D, A, X[(14 - 4 * k) % 16], 23, 35 + 4 * k
+            )
 
         # round 4
         for k in range(4):
             A = MD5._round_4_op(A, B, C, D, X[(0 - 4 * k) % 16], 6, 48 + 4 * k)
-            D = MD5._round_4_op(D, A, B, C, X[(7 - 4 * k) % 16], 10, 49 + 4 * k)
-            C = MD5._round_4_op(C, D, A, B, X[(14 - 4 * k) % 16], 15, 50 + 4 * k)
-            B = MD5._round_4_op(B, C, D, A, X[(5 - 4 * k) % 16], 21, 51 + 4 * k)
+            D = MD5._round_4_op(
+                D, A, B, C, X[(7 - 4 * k) % 16], 10, 49 + 4 * k
+            )
+            C = MD5._round_4_op(
+                C, D, A, B, X[(14 - 4 * k) % 16], 15, 50 + 4 * k
+            )
+            B = MD5._round_4_op(
+                B, C, D, A, X[(5 - 4 * k) % 16], 21, 51 + 4 * k
+            )
 
         self._A = (A + self._A) & MDN.last32
         self._B = (B + self._B) & MDN.last32

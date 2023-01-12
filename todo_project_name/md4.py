@@ -16,8 +16,8 @@ class MD4(MDN):
     """
 
     # magic constants (high-order digits given first == big endian)
-    ROUND_2 = 0x5a827999
-    ROUND_3 = 0x6ed9eba1
+    ROUND_2 = 0x5A827999
+    ROUND_3 = 0x6ED9EBA1
 
     def __init__(self, message_bytes: Iterator[bytes]):
         """It is recommended to use methods `MD4.from_bytes` or `MD4.from_file`
@@ -58,12 +58,16 @@ class MD4(MDN):
     @staticmethod
     def _round_2_op(A, B, C, D, X, s):
         """Operation of second round of the algorithm."""
-        return MDN.l_roll((A + MD4._g(B, C, D) + X + MD4.ROUND_2) & MD4.last32, s)
+        return MDN.l_roll(
+            (A + MD4._g(B, C, D) + X + MD4.ROUND_2) & MD4.last32, s
+        )
 
     @staticmethod
     def _round_3_op(A, B, C, D, X, s):
         """Operation of third round of the algorithm."""
-        return MDN.l_roll((A + MD4._h(B, C, D) + X + MD4.ROUND_3) & MD4.last32, s)
+        return MDN.l_roll(
+            (A + MD4._h(B, C, D) + X + MD4.ROUND_3) & MD4.last32, s
+        )
 
     def _update(self, X: List[int]) -> None:
         """Update internal registers according to MD4 specification:
