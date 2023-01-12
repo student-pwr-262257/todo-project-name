@@ -6,6 +6,9 @@ authors = ["Jakub Kaczor <262257@student.pwr.edu.pl>"]
 readme = "README.md"
 packages = [{include = "todo_project_name"}]
 
+[tool.black]
+line-length = 79
+
 [tool.poetry.dependencies]
 python = ">=3.10, <3.12"
 pyside6 = "^6.4.1"
