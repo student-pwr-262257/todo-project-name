@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow
+
+from PySide6.QtWidgets import QApplication, QWidget
 
 
 def main():
@@ -12,7 +13,7 @@ def main():
     sys.exit(status)
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
     def __init__(self) -> None:
         """Create a new instance."""
         super().__init__()
