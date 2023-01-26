@@ -1,11 +1,37 @@
 #!/usr/bin/python3
 
-import sys
+# Unfortunately, using mypy with Qt doesn't work well. mypy can't see some
+# objects attributes, for example, according to mypy, QPushButton doesn't have
+# clicked signal attribute. Therefore, it is turned off for the entire module,
+# as the errors are numerous and ignoring each such a line would be annoying.
+# type: ignore
 
-from PySide6.QtWidgets import QApplication, QWidget
+from enum import Enum, auto
+from pathlib import Path
+import sys
+import logging
+from logging import debug
+from PySide6.QtCore import QObject, Signal, Slot
+from rich.logging import RichHandler
+
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QWidget,
+    QComboBox,
+    QFormLayout,
+)
+
+from todo_project_name.md5 import MD5
+from todo_project_name.md4 import MD4
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "--debug":
+        logging.basicConfig(level="DEBUG", handlers=[RichHandler()])
     application = QApplication()
     main_window = MainWindow()
     main_window.show()
@@ -17,8 +43,198 @@ class MainWindow(QWidget):
     def __init__(self) -> None:
         """Create a new instance."""
         super().__init__()
-        # TODO: Implement.
-        raise NotImplementedError
+
+        self.state = State(self)
+        debug(f"Initial state: {self.state}")
+
+        self.action = QComboBox()
+        self.action.addItems(
+            [
+                "Generate checksum",
+                "Generate key pair",
+                "Sign",
+                "Verify signature",
+            ]
+        )
+        # Each action change resets the state.
+        self.action.currentTextChanged.connect(
+            lambda: self.state._reset(action=self.action.currentText())
+        )
+
+        self.layout = QFormLayout(self)
+
+        self.checksumLayout = QFormLayout()
+
+        self.messagePath = QLabel("None")
+        self.state.messagePathChanged.connect(self.messagePath.setText)
+        self.checksumLayout.addRow("Message path", self.messagePath)
+
+        self.messagePathButton = QPushButton("Change message path...")
+        self.messagePathButton.clicked.connect(
+            lambda: self.state._update(
+                message=QFileDialog.getOpenFileName()[0]
+            )
+        )
+        self.checksumLayout.addWidget(self.messagePathButton)
+
+        self.algorithm = QComboBox()
+        self.algorithm.addItems(
+            [
+                "MD4",
+                "MD5",
+            ]
+        )
+        self.algorithm.currentTextChanged.connect(
+            lambda: self.state._update(algorithm=self.algorithm.currentText())
+        )
+        self.checksumLayout.addRow("Algorithm", self.algorithm)
+
+        self.checksumPath = QLabel("None")
+        self.state.checksumPathChanged.connect(self.checksumPath.setText)
+        self.checksumLayout.addRow("Checksum path: ", self.checksumPath)
+        self.checksumPathButton = QPushButton("Change checksum path...")
+        self.checksumPathButton.clicked.connect(
+            lambda: self.state._update(
+                checksum_path=QFileDialog.getSaveFileName()[0]
+            )
+        )
+        self.checksumLayout.addWidget(self.checksumPathButton)
+
+        self.layout.addRow("Action", self.action)
+        self.layout.addRow(self.checksumLayout)
+
+        self.submitButton = QPushButton("Proceed")
+        self.submitButton.clicked.connect(self.state._act)
+        self.checksumLayout.addWidget(self.submitButton)
+
+
+class State(QObject):
+    messagePathChanged = Signal(str)
+    checksumPathChanged = Signal(str)
+
+    def __init__(self, qt_parent) -> None:
+        """Create a new instance."""
+        super().__init__()
+        self.qt_parent = qt_parent
+        self._reset()
+
+    def _reset(self, **fields) -> None:
+        """Set default values."""
+        self.action = Action.CHECKSUM
+        self.algorithm = "MD4"
+        self.checksum_path = None
+        self.key_id = None
+        self.message_path = None
+        self.private_key = None
+        self.public_key = None
+        self.signature = None
+        if fields:
+            self._update(**fields)
+        debug(f"The state was reset to {self}.")
+
+    @property
+    def message_path(self):
+        return self._message_path
+
+    @message_path.setter
+    def message_path(self, path) -> None:
+        self._message_path = path
+        self.messagePathChanged.emit(str(path))
+
+    @property
+    def checksum_path(self):
+        return self._checkshum_path
+
+    @checksum_path.setter
+    def checksum_path(self, path):
+        self._checkshum_path = path
+        self.checksumPathChanged.emit(str(path))
+
+    @Slot(dict)
+    def _update(self, **fields) -> None:
+        """Update the state."""
+        debug(f"Before update: {self.__dict__}")
+        action = fields.get("action")
+        match action:
+            case None:
+                pass
+            case "Generate checksum":
+                self.action = Action.CHECKSUM
+            case _:
+                raise NotImplementedError("Failed to match action.")
+
+        message = fields.get("message")
+        if message:
+            self.message_path = Path(message)
+
+        checksum_path = fields.get("checksum_path")
+        if checksum_path:
+            self.checksum_path = Path(checksum_path)
+
+        algorithm = fields.get("algorithm")
+        if algorithm:
+            self.algorithm = algorithm
+
+        debug(f"After update: {self.__dict__}")
+
+    def __repr__(self) -> str:
+        """Representation of data."""
+        return f"{self.__dict__}"
+
+    @Slot()
+    def _act(self) -> None:
+        """Perform the action described by the state."""
+        match self.action:
+            case Action.CHECKSUM:
+                if not self.message_path or not self.checksum_path:
+                    QMessageBox.critical(
+                        self.qt_parent,
+                        "Error",
+                        "Paths weren't given. Please fill them in.",
+                        QMessageBox.StandardButton.Ok,
+                    )
+                    return
+
+                try:
+                    match self.algorithm:
+                        case "MD4":
+                            checksum = MD4.from_file(self.message_path)
+                        case "MD5":
+                            checksum = MD5.from_file(self.message_path)
+                        case _:
+                            raise NotImplementedError(
+                                f"Invalid algorithm {self.algorithm}"
+                            )
+
+                    Path(self.checksum_path).write_text(
+                        checksum.string_digest()
+                    )
+                except:
+                    QMessageBox.critical(
+                        self.qt_parent,
+                        "Error",
+                        "Something went wrong. Did you delete files after selecting them?",
+                    )
+
+            case Action.KEYPAIR:
+                raise NotImplementedError
+            case Action.SIGN:
+                raise NotImplementedError
+            case Action.VERIFY:
+                raise NotImplementedError
+            case _:
+                raise NotImplementedError(
+                    f"Unexpected case matched. The action was: {self.action}"
+                )
+
+
+class Action(Enum):
+    """The end procedure of single program operation."""
+
+    CHECKSUM = auto()
+    KEYPAIR = auto()
+    SIGN = auto()
+    VERIFY = auto()
 
 
 if __name__ == "__main__":
