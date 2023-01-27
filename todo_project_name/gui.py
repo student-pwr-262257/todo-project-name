@@ -75,6 +75,8 @@ class MainWindow(QWidget):
         # Add all the containers to the main data container
         self.data_container.addWidget(self.checksumContainer)
         self.data_container.addWidget(self.keypairContainer)
+        self.data_container.addWidget(self.signContainer)
+        self.data_container.addWidget(self.verifyContainer)
 
         ACTION_STRINGS = [
             "Generate checksum",
