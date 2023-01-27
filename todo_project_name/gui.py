@@ -163,12 +163,27 @@ class State(QObject):
             self._update(**fields)
         debug(f"The state was reset to {self}.")
 
+    def __repr__(self):
+        name = self.__class__.__name__
+        return f"""{name}(
+            action={self.action},
+            algorithm={self.algorithm},
+            checksum_path={self.checksum_path},
+            key_id={self.key_id},
+            message_path={self.message_path},
+            private_key={self.private_key},
+            public_key={self.public_key},
+            signature={self.signature},
+        )"""
+
+    __str__ = __repr__
+
     @property
     def message_path(self):
         return self._message_path
 
     @message_path.setter
-    def message_path(self, path) -> None:
+    def message_path(self, path: str) -> None:
         self._message_path = path
         self.messagePathChanged.emit(str(path))
 
