@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QMessageBox,
     QPushButton,
+    QStackedLayout,
     QWidget,
     QComboBox,
     QFormLayout,
@@ -47,23 +48,51 @@ class MainWindow(QWidget):
         self.state = State(self)
         debug(f"Initial state: {self.state}")
 
+        # The main widget layout with its data container holding widgets needed
+        # for current action
+        self.layout = QFormLayout(self)
+        self.data_container = QStackedLayout()
+
+        # Data containers for each action
+        self.checksumLayout = QFormLayout()
+        self.checksumContainer = QWidget()
+        self.checksumContainer.setLayout(self.checksumLayout)
+
+        self.keypairLayout = QFormLayout()
+        self.keypairContainer = QWidget()
+        self.keypairContainer.setLayout(self.keypairLayout)
+
+        self.signLayout = QFormLayout()
+        self.signContainer = QWidget()
+        self.signContainer.setLayout(self.signLayout)
+
+        self.verifyLayout = QFormLayout()
+        self.verifyContainer = QWidget()
+        self.verifyContainer.setLayout(self.verifyLayout)
+
+        # Add all the containers to the main data container
+        self.data_container.addWidget(self.checksumContainer)
+        self.data_container.addWidget(self.keypairContainer)
+
+        ACTION_STRINGS = [
+            "Generate checksum",
+            "Generate key pair",
+            "Sign",
+            "Verify signature",
+        ]
         self.action = QComboBox()
-        self.action.addItems(
-            [
-                "Generate checksum",
-                "Generate key pair",
-                "Sign",
-                "Verify signature",
-            ]
-        )
-        # Each action change resets the state.
+        self.action.addItems(ACTION_STRINGS)
+
+        # Each action change resets the state
         self.action.currentTextChanged.connect(
             lambda: self.state._reset(action=self.action.currentText())
         )
-
-        self.layout = QFormLayout(self)
-
-        self.checksumLayout = QFormLayout()
+        # and the layout
+        self.action.currentTextChanged.connect(
+            lambda text: self.data_container.setCurrentIndex(
+                ACTION_STRINGS.index(text)
+            )
+        )
 
         self.messagePath = QLabel("None")
         self.state.messagePathChanged.connect(self.messagePath.setText)
@@ -101,11 +130,13 @@ class MainWindow(QWidget):
         self.checksumLayout.addWidget(self.checksumPathButton)
 
         self.layout.addRow("Action", self.action)
-        self.layout.addRow(self.checksumLayout)
+        self.layout.addRow(self.data_container)
 
         self.submitButton = QPushButton("Proceed")
         self.submitButton.clicked.connect(self.state._act)
-        self.checksumLayout.addWidget(self.submitButton)
+        self.layout.addWidget(self.submitButton)
+
+        self.setLayout(self.layout)
 
 
 class State(QObject):
