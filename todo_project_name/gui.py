@@ -159,6 +159,29 @@ class MainWindow(QWidget):
         )
         self.keypairLayout.addRow("Key pair id", self.keypairId)
 
+        self.signLayout.addRow("Message path", self.messagePath)
+        self.signLayout.addWidget(self.messagePathButton)
+        self.keyId = QLabel("")
+        self.state.keyIdChanged.connect(self.keyId.setText)
+        self.signLayout.addRow("Key ID", self.keyId)
+        self.privateKeyPath = QPushButton("Change the key…")
+        self.privateKeyPath.clicked.connect(
+            lambda: self.state._update(
+                private_key=QFileDialog.getOpenFileName()[0]
+            )
+        )
+        self.signLayout.addWidget(self.privateKeyPath)
+        self.signaturePath = QLabel("None")
+        self.state.signaturePathChanged.connect(self.signaturePath.setText)
+        self.signaturePathButton = QPushButton("Change signature path…")
+        self.signaturePathButton.clicked.connect(
+            lambda text: self.state._update(
+                signature_path=QFileDialog.getSaveFileName()[0]
+            )
+        )
+        self.signLayout.addRow("Signature path", self.signaturePath)
+        self.signLayout.addWidget(self.signaturePathButton)
+
         self.layout.addRow("Action", self.action)
         self.layout.addRow(self.data_container)
 
@@ -173,6 +196,8 @@ class State(QObject):
     messagePathChanged = Signal(str)
     checksumPathChanged = Signal(str)
     keypairPathChanged = Signal(str)
+    keyIdChanged = Signal(str)
+    signaturePathChanged = Signal(str)
 
     def __init__(self, qt_parent) -> None:
         """Create a new instance."""
@@ -186,12 +211,12 @@ class State(QObject):
         self.algorithm = "MD4"
         self.keypair_basename = "key"
         self.checksum_path = None
-        self.key_id = None
+        self._key_id = None
         self.keypair_path = None
         self.message_path = None
-        self.private_key = None
-        self.public_key = None
-        self.signature = None
+        self._private_key = None
+        self._public_key = None
+        self._signature_path = None
         if fields:
             self._update(**fields)
         debug(f"The state was reset to {self}.")
@@ -208,10 +233,19 @@ class State(QObject):
             message_path={self.message_path},
             private_key={self.private_key},
             public_key={self.public_key},
-            signature={self.signature},
+            signature_path={self.signature_path},
         )"""
 
     __str__ = __repr__
+
+    @property
+    def signature_path(self):
+        return self._signature_path
+
+    @signature_path.setter
+    def signature_path(self, path):
+        self._signature_path = path
+        self.signaturePathChanged.emit(path)
 
     @property
     def message_path(self):
@@ -240,6 +274,35 @@ class State(QObject):
         self._keypair_path = path
         self.keypairPathChanged.emit(path)
 
+    @property
+    def key_id(self):
+        return self._key_id
+
+    @key_id.setter
+    def key_id(self, text):
+        self._key_id = text
+        self.keyIdChanged.emit(text)
+
+    @property
+    def private_key(self):
+        return self._private_key
+
+    @private_key.setter
+    def private_key(self, path):
+        key = rsa.read_key(Path(path), rsa.RSAKeyPrivate)
+        self._private_key = path
+        self.key_id = key.id
+
+    @property
+    def public_key(self):
+        return self._public_key
+
+    @public_key.setter
+    def public_key(self, path):
+        key = rsa.read_key(Path(path), rsa.RSAKeyPublic)
+        self._public_key = path
+        self.key_id = key.id
+
     @Slot(dict)
     def _update(self, **fields) -> None:
         """Update the state."""
@@ -252,6 +315,8 @@ class State(QObject):
                 self.action = Action.CHECKSUM
             case "Generate key pair":
                 self.action = Action.KEYPAIR
+            case "Sign":
+                self.action = Action.SIGN
             case _:
                 raise NotImplementedError("Failed to match action.")
 
@@ -275,9 +340,17 @@ class State(QObject):
         if keypair_basename:
             self.keypair_basename = keypair_basename
 
+        private_key = fields.get("private_key")
+        if private_key:
+            self.private_key = private_key
+
         key_id = fields.get("key_id")
         if key_id:
             self.key_id = key_id
+
+        signature_path = fields.get("signature_path")
+        if signature_path:
+            self.signature_path = signature_path
 
         debug(f"After update: {self}")
 
@@ -288,14 +361,21 @@ class State(QObject):
     @Slot()
     def _act(self) -> None:
         """Perform the action described by the state."""
+
+        def inform_about_error(text: str):
+            """Inform about an error using dialog."""
+            QMessageBox.critical(
+                self.qt_parent,
+                "Error",
+                text,
+                QMessageBox.StandardButton.Ok,
+            )
+
         match self.action:
             case Action.CHECKSUM:
                 if not self.message_path or not self.checksum_path:
-                    QMessageBox.critical(
-                        self.qt_parent,
-                        "Error",
-                        "Paths weren't given. Please fill them in.",
-                        QMessageBox.StandardButton.Ok,
+                    inform_about_error(
+                        "Paths weren't given. Please fill them in."
                     )
                     return
 
@@ -314,20 +394,16 @@ class State(QObject):
                         checksum.string_digest()
                     )
                 except:
-                    QMessageBox.critical(
-                        self.qt_parent,
-                        "Error",
+                    inform_about_error(
                         "Something went wrong. Did you delete files after selecting them?",
                     )
 
             case Action.KEYPAIR:
                 if not self.keypair_path or not self.keypair_basename:
-                    QMessageBox.critical(
-                        self.qt_parent,
-                        "Error",
+                    inform_about_error(
                         "Keypair path or basename weren't given. Please fill it in.",
-                        QMessageBox.StandardButton.Ok,
                     )
+                    return
                 try:
                     key_pair = rsa.rsa_key_gen(128)
                     key_pair.private.id = self.key_id
@@ -343,14 +419,30 @@ class State(QObject):
                         / (self.keypair_basename + ".public"),
                     )
                 except:
-                    QMessageBox.critical(
-                        self.qt_parent,
-                        "Error",
+                    inform_about_error(
                         "Something went wrong. Have you generated keys with such a basename and path already?",
                     )
 
             case Action.SIGN:
-                raise NotImplementedError
+                if not self.private_key or not self.message_path:
+                    inform_about_error(
+                        "Paths weren't given. Please fill them in.",
+                    )
+                    return
+                try:
+                    message = Path(self.message_path).read_text("utf8")
+                    key = rsa.read_key(
+                        Path(self.private_key), rsa.RSAKeyPrivate
+                    )
+                    signature = rsa.rsa_sign(message, key)
+                    Path(self.signature_path).write_text(
+                        signature, encoding="utf8"
+                    )
+                except:
+                    inform_about_error(
+                        "Failed to write signature. Do you have write access?"
+                    )
+
             case Action.VERIFY:
                 raise NotImplementedError
             case _:
