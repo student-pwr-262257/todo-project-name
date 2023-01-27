@@ -176,11 +176,20 @@ class MainWindow(QWidget):
         self.signaturePathButton = QPushButton("Change signature path…")
         self.signaturePathButton.clicked.connect(
             lambda text: self.state._update(
-                signature_path=QFileDialog.getSaveFileName()[0]
+                signature_path=QFileDialog.getOpenFileName()[0]
+                if self.state.action == Action.VERIFY
+                else QFileDialog.getSaveFileName()[0]
             )
         )
         self.signLayout.addRow("Signature path", self.signaturePath)
         self.signLayout.addWidget(self.signaturePathButton)
+
+        self.verifyLayout.addRow("Public key ID", self.keyId)
+        self.verifyLayout.addWidget(self.keyPathButton)
+        self.verifyLayout.addRow("Message to verify", self.messagePath)
+        self.verifyLayout.addWidget(self.messagePathButton)
+        self.verifyLayout.addRow("Signature path", self.signaturePath)
+        self.verifyLayout.addWidget(self.signaturePathButton)
 
         self.layout.addRow("Action", self.action)
         self.layout.addRow(self.data_container)
@@ -305,6 +314,8 @@ class State(QObject):
                 self.action = Action.KEYPAIR
             case "Sign":
                 self.action = Action.SIGN
+            case "Verify":
+                self.action = Action.VERIFY
             case _:
                 raise NotImplementedError("Failed to match action.")
 
@@ -430,7 +441,34 @@ class State(QObject):
                     )
 
             case Action.VERIFY:
-                raise NotImplementedError
+                if not (
+                    self.key_path and self.message_path and self.signature_path
+                ):
+                    inform_about_error("Please, fill in all the fields.")
+                try:
+                    message = Path(self.message_path).read_text("utf8")
+                    key = rsa.read_key(Path(self.key_path), rsa.RSAKeyPublic)
+                    signature = Path(self.signature_path).read_text("utf8")
+                    is_correct = rsa.rsa_verify(message, signature, key)
+                    if is_correct:
+                        QMessageBox.information(
+                            self.qt_parent,
+                            "Correct",
+                            "Given signature is correct.",
+                            QMessageBox.StandardButton.Ok,
+                        )
+                    else:
+                        QMessageBox.information(
+                            self.qt_parent,
+                            "Incorrect",
+                            "Given signature is incorrect.",
+                            QMessageBox.StandardButton.Ok,
+                        )
+
+                except:
+                    inform_about_error(
+                        "Something went wrong. Are the files still there?"
+                    )
             case _:
                 raise NotImplementedError(
                     f"Unexpected case matched. The action was: {self.action}"
