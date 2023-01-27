@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
     QLabel,
+    QLineEdit,
     QMessageBox,
     QPushButton,
     QStackedLayout,
@@ -25,6 +26,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
 )
+from todo_project_name import rsa
 
 from todo_project_name.md5 import MD5
 from todo_project_name.md4 import MD4
@@ -129,6 +131,32 @@ class MainWindow(QWidget):
         )
         self.checksumLayout.addWidget(self.checksumPathButton)
 
+        self.keypairPath = QLabel("None")
+        self.state.keypairPathChanged.connect(self.keypairPath.setText)
+        self.keypairButton = QPushButton("Change keypair save location…")
+        self.keypairButton.clicked.connect(
+            lambda: self.state._update(
+                keypair_path=QFileDialog.getExistingDirectory()
+            )
+        )
+        self.keypairLayout.addRow("Keypair save path:", self.keypairPath)
+        self.keypairLayout.addWidget(self.keypairButton)
+
+        self.keypairBasename = QLineEdit("key")
+        self.keypairBasename.textChanged.connect(
+            lambda text: self.state._update(keypair_basename=text)
+        )
+        self.keypairLayout.addRow(
+            "Base name of generated keys",
+            self.keypairBasename,
+        )
+
+        self.keypairId = QLineEdit("")
+        self.keypairId.textChanged.connect(
+            lambda text: self.state._update(key_id=text)
+        )
+        self.keypairLayout.addRow("Key pair id", self.keypairId)
+
         self.layout.addRow("Action", self.action)
         self.layout.addRow(self.data_container)
 
@@ -142,6 +170,7 @@ class MainWindow(QWidget):
 class State(QObject):
     messagePathChanged = Signal(str)
     checksumPathChanged = Signal(str)
+    keypairPathChanged = Signal(str)
 
     def __init__(self, qt_parent) -> None:
         """Create a new instance."""
@@ -153,8 +182,10 @@ class State(QObject):
         """Set default values."""
         self.action = Action.CHECKSUM
         self.algorithm = "MD4"
+        self.keypair_basename = "key"
         self.checksum_path = None
         self.key_id = None
+        self.keypair_path = None
         self.message_path = None
         self.private_key = None
         self.public_key = None
@@ -170,6 +201,8 @@ class State(QObject):
             algorithm={self.algorithm},
             checksum_path={self.checksum_path},
             key_id={self.key_id},
+            keypair_basename={self.keypair_basename},
+            keypair_path={self.keypair_path},
             message_path={self.message_path},
             private_key={self.private_key},
             public_key={self.public_key},
@@ -192,20 +225,31 @@ class State(QObject):
         return self._checkshum_path
 
     @checksum_path.setter
-    def checksum_path(self, path):
+    def checksum_path(self, path: str):
         self._checkshum_path = path
         self.checksumPathChanged.emit(str(path))
+
+    @property
+    def keypair_path(self):
+        return self._keypair_path
+
+    @keypair_path.setter
+    def keypair_path(self, path: str):
+        self._keypair_path = path
+        self.keypairPathChanged.emit(path)
 
     @Slot(dict)
     def _update(self, **fields) -> None:
         """Update the state."""
-        debug(f"Before update: {self.__dict__}")
+        debug(f"Before update: {self}")
         action = fields.get("action")
         match action:
             case None:
                 pass
             case "Generate checksum":
                 self.action = Action.CHECKSUM
+            case "Generate key pair":
+                self.action = Action.KEYPAIR
             case _:
                 raise NotImplementedError("Failed to match action.")
 
@@ -221,7 +265,19 @@ class State(QObject):
         if algorithm:
             self.algorithm = algorithm
 
-        debug(f"After update: {self.__dict__}")
+        keypair_path = fields.get("keypair_path")
+        if keypair_path:
+            self.keypair_path = keypair_path
+
+        keypair_basename = fields.get("keypair_basename")
+        if keypair_basename:
+            self.keypair_basename = keypair_basename
+
+        key_id = fields.get("key_id")
+        if key_id:
+            self.key_id = key_id
+
+        debug(f"After update: {self}")
 
     def __repr__(self) -> str:
         """Representation of data."""
@@ -263,7 +319,34 @@ class State(QObject):
                     )
 
             case Action.KEYPAIR:
-                raise NotImplementedError
+                if not self.keypair_path or not self.keypair_basename:
+                    QMessageBox.critical(
+                        self.qt_parent,
+                        "Error",
+                        "Keypair path or basename weren't given. Please fill it in.",
+                        QMessageBox.StandardButton.Ok,
+                    )
+                try:
+                    key_pair = rsa.rsa_key_gen(128)
+                    key_pair.private.id = self.key_id
+                    key_pair.public.id = self.key_id
+                    rsa.save_key(
+                        key_pair.private,
+                        Path(self.keypair_path)
+                        / (self.keypair_basename + ".private"),
+                    )
+                    rsa.save_key(
+                        key_pair.public,
+                        Path(self.keypair_path)
+                        / (self.keypair_basename + ".public"),
+                    )
+                except:
+                    QMessageBox.critical(
+                        self.qt_parent,
+                        "Error",
+                        "Something went wrong. Have you generated keys with such a basename and path already?",
+                    )
+
             case Action.SIGN:
                 raise NotImplementedError
             case Action.VERIFY:
