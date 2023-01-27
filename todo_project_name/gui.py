@@ -164,13 +164,13 @@ class MainWindow(QWidget):
         self.keyId = QLabel("")
         self.state.keyIdChanged.connect(self.keyId.setText)
         self.signLayout.addRow("Key ID", self.keyId)
-        self.privateKeyPath = QPushButton("Change the key…")
-        self.privateKeyPath.clicked.connect(
+        self.keyPathButton = QPushButton("Change the key…")
+        self.keyPathButton.clicked.connect(
             lambda: self.state._update(
-                private_key=QFileDialog.getOpenFileName()[0]
+                key_path=QFileDialog.getOpenFileName()[0]
             )
         )
-        self.signLayout.addWidget(self.privateKeyPath)
+        self.signLayout.addWidget(self.keyPathButton)
         self.signaturePath = QLabel("None")
         self.state.signaturePathChanged.connect(self.signaturePath.setText)
         self.signaturePathButton = QPushButton("Change signature path…")
@@ -214,8 +214,7 @@ class State(QObject):
         self._key_id = None
         self.keypair_path = None
         self.message_path = None
-        self._private_key = None
-        self._public_key = None
+        self._key_path = None
         self._signature_path = None
         if fields:
             self._update(**fields)
@@ -231,8 +230,7 @@ class State(QObject):
             keypair_basename={self.keypair_basename},
             keypair_path={self.keypair_path},
             message_path={self.message_path},
-            private_key={self.private_key},
-            public_key={self.public_key},
+            key_path={self.key_path},
             signature_path={self.signature_path},
         )"""
 
@@ -284,23 +282,13 @@ class State(QObject):
         self.keyIdChanged.emit(text)
 
     @property
-    def private_key(self):
-        return self._private_key
+    def key_path(self):
+        return self._key_path
 
-    @private_key.setter
-    def private_key(self, path):
+    @key_path.setter
+    def key_path(self, path):
         key = rsa.read_key(Path(path), rsa.RSAKeyPrivate)
-        self._private_key = path
-        self.key_id = key.id
-
-    @property
-    def public_key(self):
-        return self._public_key
-
-    @public_key.setter
-    def public_key(self, path):
-        key = rsa.read_key(Path(path), rsa.RSAKeyPublic)
-        self._public_key = path
+        self._key_path = path
         self.key_id = key.id
 
     @Slot(dict)
@@ -340,9 +328,9 @@ class State(QObject):
         if keypair_basename:
             self.keypair_basename = keypair_basename
 
-        private_key = fields.get("private_key")
-        if private_key:
-            self.private_key = private_key
+        key_path = fields.get("key_path")
+        if key_path:
+            self.key_path = key_path
 
         key_id = fields.get("key_id")
         if key_id:
@@ -424,16 +412,14 @@ class State(QObject):
                     )
 
             case Action.SIGN:
-                if not self.private_key or not self.message_path:
+                if not self.key_path or not self.message_path:
                     inform_about_error(
                         "Paths weren't given. Please fill them in.",
                     )
                     return
                 try:
                     message = Path(self.message_path).read_text("utf8")
-                    key = rsa.read_key(
-                        Path(self.private_key), rsa.RSAKeyPrivate
-                    )
+                    key = rsa.read_key(Path(self.key_path), rsa.RSAKeyPrivate)
                     signature = rsa.rsa_sign(message, key)
                     Path(self.signature_path).write_text(
                         signature, encoding="utf8"
