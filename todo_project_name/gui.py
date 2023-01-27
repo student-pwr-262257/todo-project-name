@@ -82,7 +82,7 @@ class MainWindow(QWidget):
             "Generate checksum",
             "Generate key pair",
             "Sign",
-            "Verify signature",
+            "Verify",
         ]
         self.action = QComboBox()
         self.action.addItems(ACTION_STRINGS)
