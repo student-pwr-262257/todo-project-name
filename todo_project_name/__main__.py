@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
-import todo_project_name as pkg
+from todo_project_name import gui
 
 
 def main():
-    pass
+    gui.main()
 
 
 if __name__ == "__main__":
