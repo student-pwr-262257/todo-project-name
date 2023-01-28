@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 import logging
 from logging import debug
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject, Qt, Signal, Slot
 from rich.logging import RichHandler
 
 from PySide6.QtWidgets import (
@@ -191,11 +191,33 @@ class MainWindow(QWidget):
         self.verifyLayout.addRow("Signature path", self.signaturePath)
         self.verifyLayout.addWidget(self.signaturePathButton)
 
+        self.helpButton = QPushButton("Help")
+
+        def show_help() -> None:
+            """Show help to the user in the form of a popup."""
+            box = QMessageBox(parent=self)
+            box.setWindowTitle("Help")
+            box.setTextFormat(Qt.RichText)
+            box.setText(
+                """Click the folded menu labeled “Action” and choose the
+                appropriate procedure. Then, fill all the required
+                information. The application lets you generate a checksum of
+                some file using multiple hashing algorithms. Also, it enables
+                you to generate RSA key pairs. You can then use them to create
+                a signature of a file with some message. Lastly, you can verify
+                such signatures obtained from others, if you have their public
+                key and signature."""
+            )
+            box.show()
+
+        self.helpButton.clicked.connect(show_help)
+
         self.layout.addRow("Action", self.action)
         self.layout.addRow(self.data_container)
 
         self.submitButton = QPushButton("Proceed")
         self.submitButton.clicked.connect(self.state._act)
+        self.layout.addWidget(self.helpButton)
         self.layout.addWidget(self.submitButton)
 
         self.setLayout(self.layout)
