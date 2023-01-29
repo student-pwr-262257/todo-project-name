@@ -215,7 +215,9 @@ class MainWindow(QWidget):
         )
         self.checksumLayout.checksumPathButton.clicked.connect(
             lambda: self.state._update(
-                checksum_path=QFileDialog.getSaveFileName()[0]
+                checksum_path=QFileDialog.getSaveFileName(
+                    dir=f"{self.state.message_path}-{self.state.algorithm}-checksum.txt"
+                )[0]
             )
         )
 
