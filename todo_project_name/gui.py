@@ -6,6 +6,7 @@
 # as the errors are numerous and ignoring each such a line would be annoying.
 # type: ignore
 
+from copy import copy
 from enum import Enum, auto
 from pathlib import Path
 import sys
@@ -266,6 +267,21 @@ class State(QObject):
         )"""
 
     __str__ = __repr__
+
+    def __copy__(self):
+        """Return a copy of the object."""
+        dummy = QWidget()
+        state = self.__class__(dummy)
+        state.action = copy(self.action)
+        state.algorithm = copy(self.algorithm)
+        state.keypair_basename = copy(self.keypair_basename)
+        state.checksum_path = copy(self.checksum_path)
+        state._key_id = copy(self.key_id)
+        state.keypair_path = copy(self.keypair_path)
+        state.message_path = copy(self.message_path)
+        state._key_path = copy(self.key_path)
+        state._signature_path = copy(self.signature_path)
+        return state
 
     @property
     def signature_path(self):
