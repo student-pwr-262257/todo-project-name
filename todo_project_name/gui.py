@@ -275,7 +275,9 @@ class MainWindow(QWidget):
             lambda text: self.state._update(
                 signature_path=QFileDialog.getOpenFileName()[0]
                 if self.state.action == Action.VERIFY
-                else QFileDialog.getSaveFileName()[0]
+                else QFileDialog.getSaveFileName(
+                    dir=f"{self.state.message_path}-signature.txt"
+                )[0]
             )
         )
 
