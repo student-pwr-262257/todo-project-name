@@ -557,6 +557,12 @@ class State(QObject):
                     Path(self.checksum_path).write_text(
                         checksum.string_digest()
                     )
+                    QMessageBox.information(
+                        self.qt_parent,
+                        "Ok",
+                        "Everything went well.",
+                        QMessageBox.StandardButton.Ok,
+                    )
                 except:
                     inform_about_error(
                         "Something went wrong. Did you delete files after selecting them?",
@@ -582,6 +588,12 @@ class State(QObject):
                         Path(self.keypair_path)
                         / (self.keypair_basename + ".public"),
                     )
+                    QMessageBox.information(
+                        self.qt_parent,
+                        "Ok",
+                        "Everything went well.",
+                        QMessageBox.StandardButton.Ok,
+                    )
                 except:
                     inform_about_error(
                         "Something went wrong. Have you generated keys with such a basename and path already?",
@@ -599,6 +611,12 @@ class State(QObject):
                     signature = rsa.rsa_sign(message, key)
                     Path(self.signature_path).write_text(
                         signature, encoding="utf8"
+                    )
+                    QMessageBox.information(
+                        self.qt_parent,
+                        "Ok",
+                        "Everything went well.",
+                        QMessageBox.StandardButton.Ok,
                     )
                 except:
                     inform_about_error(
