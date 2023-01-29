@@ -140,7 +140,7 @@ def rsa_sign(
     hashed: Any = algorithm.from_bytes(message.encode("utf-8")).string_digest()
     hashed = int(hashed, 16)
     signature = pow(hashed, key.key, key.modulus)
-    return hex(signature)
+    return hex(signature)[2:]
 
 
 def rsa_verify(
