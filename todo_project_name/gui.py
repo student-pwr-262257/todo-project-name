@@ -114,7 +114,7 @@ class MainWindow(QWidget):
                     "Message path", self.signLayout.messagePath
                 )
                 self.signLayout.addWidget(self.signLayout.messagePathButton)
-                self.signLayout.addRow("Key ID", self.signLayout.keyId)
+                self.signLayout.addRow("Private key ID", self.signLayout.keyId)
                 self.signLayout.addWidget(self.signLayout.keyPathButton)
                 self.signLayout.addRow(
                     "Signature path", self.signLayout.signaturePath
@@ -257,7 +257,7 @@ class MainWindow(QWidget):
         )
         self.signLayout.keyId = QLabel("None")
         self.state.keyIdChanged.connect(self.signLayout.keyId.setText)
-        self.signLayout.keyPathButton = QPushButton("Change the key…")
+        self.signLayout.keyPathButton = QPushButton("Change private key…")
         self.signLayout.keyPathButton.clicked.connect(
             lambda: self.state._update(
                 key_path=QFileDialog.getOpenFileName()[0]
@@ -283,7 +283,7 @@ class MainWindow(QWidget):
 
         self.verifyLayout.keyId = QLabel("None")
         self.state.keyIdChanged.connect(self.verifyLayout.keyId.setText)
-        self.verifyLayout.keyPathButton = QPushButton("Change the key…")
+        self.verifyLayout.keyPathButton = QPushButton("Change public key…")
         self.verifyLayout.keyPathButton.clicked.connect(
             lambda: self.state._update(
                 key_path=QFileDialog.getOpenFileName()[0]
