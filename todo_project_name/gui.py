@@ -44,6 +44,104 @@ def main():
 
 
 class MainWindow(QWidget):
+    def _prepare_containers_and_layouts(self):
+        # The main layout of the application window
+        self.layout = QFormLayout(self)
+        # Container for widgets relating to current action
+        self.data_container = QStackedLayout()
+
+        # Data containers for each action
+        self.checksumContainer = QWidget()
+        self.checksumLayout = QFormLayout()
+        self.checksumContainer.setLayout(self.checksumLayout)
+
+        self.keypairContainer = QWidget()
+        self.keypairLayout = QFormLayout()
+        self.keypairContainer.setLayout(self.keypairLayout)
+
+        self.signContainer = QWidget()
+        self.signLayout = QFormLayout()
+        self.signContainer.setLayout(self.signLayout)
+
+        self.verifyContainer = QWidget()
+        self.verifyLayout = QFormLayout()
+        self.verifyContainer.setLayout(self.verifyLayout)
+
+        # Add all the containers to the main data container (stack)
+        self.data_container.addWidget(self.checksumContainer)
+        self.data_container.addWidget(self.keypairContainer)
+        self.data_container.addWidget(self.signContainer)
+        self.data_container.addWidget(self.verifyContainer)
+
+    def _set_layout_with_widgets(self, layout) -> None:
+        """Set layout with widgets.
+
+        Warning. It reparents widgets.
+        """
+        match layout:
+            case self.checksumLayout:
+                self.checksumLayout.addRow(
+                    "Message path", self.checksumLayout.messagePath
+                )
+                self.checksumLayout.addWidget(
+                    self.checksumLayout.messagePathButton
+                )
+                self.checksumLayout.addRow(
+                    "Algorithm", self.checksumLayout.algorithm
+                )
+                self.checksumLayout.addRow(
+                    "Checksum path: ", self.checksumLayout.checksumPath
+                )
+                self.checksumLayout.addWidget(
+                    self.checksumLayout.checksumPathButton
+                )
+
+            case self.keypairLayout:
+                self.keypairLayout.addRow(
+                    "Keypair save path:", self.keypairLayout.keypairPath
+                )
+                self.keypairLayout.addWidget(self.keypairLayout.keypairButton)
+                self.keypairLayout.addRow(
+                    "Base name of generated keys",
+                    self.keypairLayout.keypairBasename,
+                )
+                self.keypairLayout.addRow(
+                    "Key pair id", self.keypairLayout.keypairId
+                )
+
+            case self.signLayout:
+                self.signLayout.addRow(
+                    "Message path", self.signLayout.messagePath
+                )
+                self.signLayout.addWidget(self.signLayout.messagePathButton)
+                self.signLayout.addRow("Key ID", self.signLayout.keyId)
+                self.signLayout.addWidget(self.signLayout.keyPathButton)
+                self.signLayout.addRow(
+                    "Signature path", self.signLayout.signaturePath
+                )
+                self.signLayout.addWidget(self.signLayout.signaturePathButton)
+
+            case self.verifyLayout:
+                self.verifyLayout.addRow(
+                    "Public key ID", self.verifyLayout.keyId
+                )
+                self.verifyLayout.addWidget(self.verifyLayout.keyPathButton)
+                self.verifyLayout.addRow(
+                    "Message to verify", self.verifyLayout.messagePath
+                )
+                self.verifyLayout.addWidget(
+                    self.verifyLayout.messagePathButton
+                )
+                self.verifyLayout.addRow(
+                    "Signature path", self.verifyLayout.signaturePath
+                )
+                self.verifyLayout.addWidget(
+                    self.verifyLayout.signaturePathButton
+                )
+
+            case _:
+                raise ValueError(f"Unrecognized layout {layout}")
+
     def __init__(self) -> None:
         """Create a new instance."""
         super().__init__()
@@ -51,42 +149,27 @@ class MainWindow(QWidget):
         self.state = State(self)
         debug(f"Initial state: {self.state}")
 
-        # The main widget layout with its data container holding widgets needed
-        # for current action
-        self.layout = QFormLayout(self)
-        self.data_container = QStackedLayout()
+        self._prepare_containers_and_layouts()
 
-        # Data containers for each action
-        self.checksumLayout = QFormLayout()
-        self.checksumContainer = QWidget()
-        self.checksumContainer.setLayout(self.checksumLayout)
-
-        self.keypairLayout = QFormLayout()
-        self.keypairContainer = QWidget()
-        self.keypairContainer.setLayout(self.keypairLayout)
-
-        self.signLayout = QFormLayout()
-        self.signContainer = QWidget()
-        self.signContainer.setLayout(self.signLayout)
-
-        self.verifyLayout = QFormLayout()
-        self.verifyContainer = QWidget()
-        self.verifyContainer.setLayout(self.verifyLayout)
-
-        # Add all the containers to the main data container
-        self.data_container.addWidget(self.checksumContainer)
-        self.data_container.addWidget(self.keypairContainer)
-        self.data_container.addWidget(self.signContainer)
-        self.data_container.addWidget(self.verifyContainer)
-
-        ACTION_STRINGS = [
+        self.ACTION_STRINGS = [
             "Generate checksum",
             "Generate key pair",
             "Sign",
             "Verify",
         ]
+        self.action_layout_map = dict(
+            zip(
+                self.ACTION_STRINGS,
+                [
+                    self.checksumLayout,
+                    self.keypairLayout,
+                    self.signLayout,
+                    self.verifyLayout,
+                ],
+            )
+        )
         self.action = QComboBox()
-        self.action.addItems(ACTION_STRINGS)
+        self.action.addItems(self.ACTION_STRINGS)
 
         # Each action change resets the state
         self.action.currentTextChanged.connect(
@@ -95,102 +178,146 @@ class MainWindow(QWidget):
         # and the layout
         self.action.currentTextChanged.connect(
             lambda text: self.data_container.setCurrentIndex(
-                ACTION_STRINGS.index(text)
+                self.ACTION_STRINGS.index(text)
             )
         )
 
-        self.messagePath = QLabel("None")
-        self.state.messagePathChanged.connect(self.messagePath.setText)
-        self.checksumLayout.addRow("Message path", self.messagePath)
-
-        self.messagePathButton = QPushButton("Change message path...")
-        self.messagePathButton.clicked.connect(
+        self.checksumLayout.messagePath = QLabel("None")
+        self.state.messagePathChanged.connect(
+            self.checksumLayout.messagePath.setText
+        )
+        self.checksumLayout.messagePathButton = QPushButton(
+            "Change message path..."
+        )
+        self.checksumLayout.messagePathButton.clicked.connect(
             lambda: self.state._update(
                 message=QFileDialog.getOpenFileName()[0]
             )
         )
-        self.checksumLayout.addWidget(self.messagePathButton)
-
-        self.algorithm = QComboBox()
-        self.algorithm.addItems(
+        self.checksumLayout.algorithm = QComboBox()
+        self.checksumLayout.algorithm.addItems(
             [
                 "MD4",
                 "MD5",
             ]
         )
-        self.algorithm.currentTextChanged.connect(
-            lambda: self.state._update(algorithm=self.algorithm.currentText())
+        self.checksumLayout.algorithm.currentTextChanged.connect(
+            lambda: self.state._update(
+                algorithm=self.checksumLayout.algorithm.currentText()
+            )
         )
-        self.checksumLayout.addRow("Algorithm", self.algorithm)
-
-        self.checksumPath = QLabel("None")
-        self.state.checksumPathChanged.connect(self.checksumPath.setText)
-        self.checksumLayout.addRow("Checksum path: ", self.checksumPath)
-        self.checksumPathButton = QPushButton("Change checksum path...")
-        self.checksumPathButton.clicked.connect(
+        self.checksumLayout.checksumPath = QLabel("None")
+        self.state.checksumPathChanged.connect(
+            self.checksumLayout.checksumPath.setText
+        )
+        self.checksumLayout.checksumPathButton = QPushButton(
+            "Change checksum path..."
+        )
+        self.checksumLayout.checksumPathButton.clicked.connect(
             lambda: self.state._update(
                 checksum_path=QFileDialog.getSaveFileName()[0]
             )
         )
-        self.checksumLayout.addWidget(self.checksumPathButton)
 
-        self.keypairPath = QLabel("None")
-        self.state.keypairPathChanged.connect(self.keypairPath.setText)
-        self.keypairButton = QPushButton("Change keypair save location…")
-        self.keypairButton.clicked.connect(
+        self.keypairLayout.keypairPath = QLabel("None")
+        self.state.keypairPathChanged.connect(
+            self.keypairLayout.keypairPath.setText
+        )
+        self.keypairLayout.keypairButton = QPushButton(
+            "Change keypair save location…"
+        )
+        self.keypairLayout.keypairButton.clicked.connect(
             lambda: self.state._update(
                 keypair_path=QFileDialog.getExistingDirectory()
             )
         )
-        self.keypairLayout.addRow("Keypair save path:", self.keypairPath)
-        self.keypairLayout.addWidget(self.keypairButton)
-
-        self.keypairBasename = QLineEdit("key")
-        self.keypairBasename.textChanged.connect(
+        self.keypairLayout.keypairBasename = QLineEdit("key")
+        self.keypairLayout.keypairBasename.textChanged.connect(
             lambda text: self.state._update(keypair_basename=text)
         )
-        self.keypairLayout.addRow(
-            "Base name of generated keys",
-            self.keypairBasename,
-        )
 
-        self.keypairId = QLineEdit("")
-        self.keypairId.textChanged.connect(
+        self.keypairLayout.keypairId = QLineEdit("")
+        self.keypairLayout.keypairId.textChanged.connect(
             lambda text: self.state._update(key_id=text)
         )
-        self.keypairLayout.addRow("Key pair id", self.keypairId)
 
-        self.signLayout.addRow("Message path", self.messagePath)
-        self.signLayout.addWidget(self.messagePathButton)
-        self.keyId = QLabel("")
-        self.state.keyIdChanged.connect(self.keyId.setText)
-        self.signLayout.addRow("Key ID", self.keyId)
-        self.keyPathButton = QPushButton("Change the key…")
-        self.keyPathButton.clicked.connect(
+        self.signLayout.messagePath = QLabel("None")
+        self.state.messagePathChanged.connect(
+            self.signLayout.messagePath.setText
+        )
+        self.signLayout.messagePathButton = QPushButton(
+            "Change message path..."
+        )
+        self.signLayout.messagePathButton.clicked.connect(
+            lambda: self.state._update(
+                message=QFileDialog.getOpenFileName()[0]
+            )
+        )
+        self.signLayout.keyId = QLabel("None")
+        self.state.keyIdChanged.connect(self.signLayout.keyId.setText)
+        self.signLayout.keyPathButton = QPushButton("Change the key…")
+        self.signLayout.keyPathButton.clicked.connect(
             lambda: self.state._update(
                 key_path=QFileDialog.getOpenFileName()[0]
             )
         )
-        self.signLayout.addWidget(self.keyPathButton)
-        self.signaturePath = QLabel("None")
-        self.state.signaturePathChanged.connect(self.signaturePath.setText)
-        self.signaturePathButton = QPushButton("Change signature path…")
-        self.signaturePathButton.clicked.connect(
+
+        self.signLayout.signaturePath = QLabel("None")
+        self.state.signaturePathChanged.connect(
+            self.signLayout.signaturePath.setText
+        )
+        self.signLayout.signaturePathButton = QPushButton(
+            "Change signature path…"
+        )
+        self.signLayout.signaturePathButton.clicked.connect(
             lambda text: self.state._update(
                 signature_path=QFileDialog.getOpenFileName()[0]
                 if self.state.action == Action.VERIFY
                 else QFileDialog.getSaveFileName()[0]
             )
         )
-        self.signLayout.addRow("Signature path", self.signaturePath)
-        self.signLayout.addWidget(self.signaturePathButton)
 
-        self.verifyLayout.addRow("Public key ID", self.keyId)
-        self.verifyLayout.addWidget(self.keyPathButton)
-        self.verifyLayout.addRow("Message to verify", self.messagePath)
-        self.verifyLayout.addWidget(self.messagePathButton)
-        self.verifyLayout.addRow("Signature path", self.signaturePath)
-        self.verifyLayout.addWidget(self.signaturePathButton)
+        self.verifyLayout.keyId = QLabel("None")
+        self.state.keyIdChanged.connect(self.verifyLayout.keyId.setText)
+        self.verifyLayout.keyPathButton = QPushButton("Change the key…")
+        self.verifyLayout.keyPathButton.clicked.connect(
+            lambda: self.state._update(
+                key_path=QFileDialog.getOpenFileName()[0]
+            )
+        )
+        self.verifyLayout.messagePath = QLabel("None")
+        self.state.messagePathChanged.connect(
+            self.verifyLayout.messagePath.setText
+        )
+        self.verifyLayout.messagePathButton = QPushButton(
+            "Change message path..."
+        )
+        self.verifyLayout.messagePathButton.clicked.connect(
+            lambda: self.state._update(
+                message=QFileDialog.getOpenFileName()[0]
+            )
+        )
+        self.verifyLayout.signaturePath = QLabel("None")
+        self.state.signaturePathChanged.connect(
+            self.verifyLayout.signaturePath.setText
+        )
+        self.verifyLayout.signaturePathButton = QPushButton(
+            "Change signature path…"
+        )
+        self.verifyLayout.signaturePathButton.clicked.connect(
+            lambda text: self.state._update(
+                signature_path=QFileDialog.getOpenFileName()[0]
+                if self.state.action == Action.VERIFY
+                else QFileDialog.getSaveFileName()[0]
+            )
+        )
+        for layout in (
+            self.checksumLayout,
+            self.signLayout,
+            self.keypairLayout,
+            self.verifyLayout,
+        ):
+            self._set_layout_with_widgets(layout)
 
         self.helpButton = QPushButton("Help")
 
