@@ -106,15 +106,6 @@
   \renewcommand*\l@subsection{\@dottedtocline{2}{4.1em}{3.5em}}%
 }
 
-% Fix the bibliography environment to add an entry to the Table of
-% Contents.
-% For a report document class this environment is a chapter.
-%
-\newenvironment{sphinxthebibliography}[1]{%
-  \if@openright\cleardoublepage\else\clearpage\fi
-  % \phantomsection % not needed here since TeXLive 2010's hyperref
-  \begin{thebibliography}{#1}%
-  \addcontentsline{toc}{chapter}{\bibname}}{\end{thebibliography}}
 
 % Same for the indices.
 % The memoir class already does this, so we don't duplicate it in that case.
