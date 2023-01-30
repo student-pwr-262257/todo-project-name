@@ -142,6 +142,29 @@ def rsa_sign(
     signature = pow(hashed, key.key, key.modulus)
     return hex(signature)[2:]
 
+def rsa_sign_file(
+    filename: str, key: RSAKeyPrivate, algorithm: Type[Union[MD4, MD5]] = MD4
+) -> str:
+    """
+    Function returns a digital singnature based on the RSA protocol.
+
+    Parameters
+    ==========
+    filename
+    : path to existing file to sign
+
+    key
+    : RSA private key
+
+    algorithm
+    : hash method. Default: MD4.
+    Available algorithms: MD4, MD5.
+    """
+    hashed: Any = algorithm.from_file(filename).string_digest()
+    hashed = int(hashed, 16)
+    signature = pow(hashed, key.key, key.modulus)
+    return hex(signature)[2:]
+
 
 def rsa_verify(
     message: str,
@@ -171,6 +194,40 @@ def rsa_verify(
 
     """
     hashed: Any = algorithm.from_bytes(message.encode("utf-8")).string_digest()
+    hashed = int(hashed, 16) % key.modulus
+    uncoded = pow(int(signature, 16), key.key, key.modulus)
+    if hashed == uncoded:
+        return True
+    return False
+
+def rsa_verify_file(
+    filename: str,
+    signature: str,
+    key: RSAKeyPublic,
+    algorithm: Type[Union[MD4, MD5]] = MD4,
+):
+    """
+    Function verifies digital singnature of a message basing on the RSA protocol.
+    It compares decoded signature with hashed message
+    and returns True if they are the same, otherwise False.
+
+    Parameters
+    ==========
+    filename
+    : path to file against which signature is being checked
+
+    signature
+    : signature for verification
+
+    key
+    : RSA public key
+
+    algorithm
+    : hash algorithm. Default: MD4.
+    Available algorithms: MD4, MD5.
+
+    """
+    hashed: Any = algorithm.from_file(filename).string_digest()
     hashed = int(hashed, 16) % key.modulus
     uncoded = pow(int(signature, 16), key.key, key.modulus)
     if hashed == uncoded:

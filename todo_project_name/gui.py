@@ -564,7 +564,7 @@ class State(QObject):
                     QMessageBox.information(
                         self.qt_parent,
                         "Ok",
-                        "Everything went well.",
+                        "Checksum saved to file.",
                         QMessageBox.StandardButton.Ok,
                     )
                 except:
@@ -595,7 +595,7 @@ class State(QObject):
                     QMessageBox.information(
                         self.qt_parent,
                         "Ok",
-                        "Everything went well.",
+                        "Key pair generated.",
                         QMessageBox.StandardButton.Ok,
                     )
                 except:
@@ -610,16 +610,19 @@ class State(QObject):
                     )
                     return
                 try:
-                    message = Path(self.message_path).read_text("utf8")
                     key = rsa.read_key(Path(self.key_path), rsa.RSAKeyPrivate)
-                    signature = rsa.rsa_sign(message, key)
+                    if self.message_path.endswith(".txt"):
+                        message = Path(self.message_path).read_text("utf8")
+                        signature = rsa.rsa_sign(message, key)
+                    else:
+                        signature = rsa.rsa_sign_file(self.message_path)
                     Path(self.signature_path).write_text(
                         signature, encoding="utf8"
                     )
                     QMessageBox.information(
                         self.qt_parent,
                         "Ok",
-                        "Everything went well.",
+                        "File signed.",
                         QMessageBox.StandardButton.Ok,
                     )
                 except:
@@ -633,10 +636,14 @@ class State(QObject):
                 ):
                     inform_about_error("Please, fill in all the fields.")
                 try:
-                    message = Path(self.message_path).read_text("utf8")
                     key = rsa.read_key(Path(self.key_path), rsa.RSAKeyPublic)
                     signature = Path(self.signature_path).read_text("utf8")
-                    is_correct = rsa.rsa_verify(message, signature, key)
+                    if self.message_path.endswith(".txt"):
+                        message = Path(self.message_path).read_text("utf8")
+                        is_correct = rsa.rsa_verify(message, signature, key)
+                    else:
+                        is_correct = rsa.rsa_verify_file(self.message_path, signature, key)
+
                     if is_correct:
                         QMessageBox.information(
                             self.qt_parent,
