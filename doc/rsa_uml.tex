@@ -1,8 +1,16 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+
+
+\usepackage{lmodern,microtype}
+
+\usepackage[simplified]{pgf-umlcd}
+\begin{document}
+	
 	\begin{tikzpicture}
-		\begin{abstractclass}[text width = 5 cm]{ABC}{0, 2}
-		\end{abstractclass}
+		
 		\begin{class}[text width = 12 cm]{RSAKey}{0 ,0}
-			\inherit{ABC}
 			\attribute{+ key : int}
 			\attribute{+ modulus: int}
 			\attribute{+ id: Optional[str] = None}
@@ -29,3 +37,4 @@
 		\composition{RSAKeyPair}{}{}{RSAKeyPrivate}
 		\composition{RSAKeyPair}{}{}{RSAKeyPublic}
 	\end{tikzpicture}
+\end{document}
