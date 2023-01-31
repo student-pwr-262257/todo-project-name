@@ -1,23 +1,13 @@
-\documentclass{article}
-\usepackage[utf8]{inputenc}
-\usepackage{polski}
-
-
-\usepackage{lmodern,microtype}
-
-\usepackage[simplified]{pgf-umlcd}
-\begin{document}
-	
 	\begin{tikzpicture}
 		
-		\begin{class}[text width = 12 cm]{RSAKey}{0 ,0}
+		\begin{abstractclass}[text width = 12 cm]{RSAKey}{0 ,0}
 			\attribute{+ key : int}
 			\attribute{+ modulus: int}
 			\attribute{+ id: Optional[str] = None}
 			\operation{+ \textunderscore\textunderscore init\textunderscore\textunderscore(self, key: int, modulus: int, id: Optional[str] = None) -\textgreater\ None}
 			\operation{+ \textunderscore\textunderscore repr\textunderscore\textunderscore(self) -\textgreater\ str}
 			\operation{+ \textunderscore\textunderscore eq\textunderscore\textunderscore(self, other: Type[RSAKey]) -\textgreater\ bool}
-		\end{class}
+		\end{abstractclass}
 	
 		
 		\begin{class}[text width = 5 cm]{RSAKeyPublic}{ -5 , -5}
@@ -37,4 +27,3 @@
 		\composition{RSAKeyPair}{}{}{RSAKeyPrivate}
 		\composition{RSAKeyPair}{}{}{RSAKeyPublic}
 	\end{tikzpicture}
-\end{document}
