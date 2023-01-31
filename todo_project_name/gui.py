@@ -567,7 +567,7 @@ class State(QObject):
                         "Checksum saved to file.",
                         QMessageBox.StandardButton.Ok,
                     )
-                except:
+                except Exception:
                     inform_about_error(
                         "Something went wrong. Did you delete files after selecting them?",
                     )
@@ -598,7 +598,7 @@ class State(QObject):
                         "Key pair generated.",
                         QMessageBox.StandardButton.Ok,
                     )
-                except:
+                except Exception:
                     inform_about_error(
                         "Something went wrong. Have you generated keys with such a basename and path already?",
                     )
@@ -609,18 +609,18 @@ class State(QObject):
                         "Paths weren't given. Please fill them in.",
                     )
                     return
-                if not self.key_path.endswith(".private"):
+                if not str(self.key_path).endswith(".private"):
                     inform_about_error(
                         "Only use private keys to sign messages. Plesase choose private key file.",
                     )
                     return
                 try:
                     key = rsa.read_key(Path(self.key_path), rsa.RSAKeyPrivate)
-                    if self.message_path.endswith(".txt"):
+                    if str(self.message_path).endswith(".txt"):
                         message = Path(self.message_path).read_text("utf8")
                         signature = rsa.rsa_sign(message, key)
                     else:
-                        signature = rsa.rsa_sign_file(self.message_path)
+                        signature = rsa.rsa_sign_file(self.message_path, key)
                     Path(self.signature_path).write_text(
                         signature, encoding="utf8"
                     )
@@ -630,7 +630,7 @@ class State(QObject):
                         "File signed.",
                         QMessageBox.StandardButton.Ok,
                     )
-                except:
+                except Exception:
                     inform_about_error(
                         "Failed to write signature. Do you have write access?"
                     )
@@ -640,14 +640,16 @@ class State(QObject):
                     self.key_path and self.message_path and self.signature_path
                 ):
                     inform_about_error("Please, fill in all the fields.")
-                if not self.key_path.endswith(".public"):
+                    return
+                if not str(self.key_path).endswith(".public"):
                     inform_about_error(
                         "Choose public key to verify signature."
                     )
+                    return
                 try:
                     key = rsa.read_key(Path(self.key_path), rsa.RSAKeyPublic)
                     signature = Path(self.signature_path).read_text("utf8")
-                    if self.message_path.endswith(".txt"):
+                    if str(self.message_path).endswith(".txt"):
                         message = Path(self.message_path).read_text("utf8")
                         is_correct = rsa.rsa_verify(message, signature, key)
                     else:
@@ -670,7 +672,7 @@ class State(QObject):
                             QMessageBox.StandardButton.Ok,
                         )
 
-                except:
+                except Exception:
                     inform_about_error(
                         "Something went wrong. Are the files still there?"
                     )
