@@ -381,7 +381,13 @@ class State(QObject):
         self._signature_path = None
         if fields:
             self._update(**fields)
+
         debug(f"The state was reset to {self}.")
+        self.messagePathChanged.emit("None")
+        self.checksumPathChanged.emit("None")
+        self.keypairPathChanged.emit("None")
+        self.keyIdChanged.emit("None")
+        self.signaturePathChanged.emit("None")
 
     def __repr__(self):
         name = self.__class__.__name__
