@@ -137,7 +137,64 @@ and \cite{md5}
 
 
 \chapter{How to use the program}
-% can be more elaborate than help in said
+The program offers 4 core functionalities:
+\begin{enumerate}
+    \item Hashing text files and other files, using MD4 or MD5 hash functions;
+    \item Generating public-private RSA key pairs;
+    \item Signing text message or file with RSA protocol;
+    \item Veryfing RSA signature of text message or file.
+\end{enumerate}
+\section{Hashing}
+To hash text message or other file do the following:
+\begin{enumerate}
+    \item Choose action {\em Generate checksum} from drop menu at the top of the window.
+    \item Click {\em Change message path...} button and select file you want to hash.
+    \item Choose hashing function (drop menu next to {\em algorithm} label).
+    \item Choose checksum file destination and name by clicking {\em Change checksum path...} button.
+    \item Click {\em Proceed} button.
+\end{enumerate}
+Hash of selected file should appear under path specified in step 4. This is text file containing
+message digest encoded as hex string.
+\section{Generating keys}
+To generate RSA key pair do the following:
+\begin{enumerate}
+    \item Choose action {\em Generate key pair} from drop menu at the top of the window.
+    \item Click {\em Change keypair save location...} and pick folder in which keys will be saved.
+        Make sure it is private location, that other users can't access.
+    \item Fill text field labelled {\em Base name of generated keys}. In the end, 2 files
+        will be created in folder specified in step 2, with this base name.
+    \item Fill text field labelled {\em Key pair id}. This field should contain description
+        of whose key it is, or other identifier.
+    \item Click {\em Proceed} button.
+\end{enumerate}
+Two files should appear in folder specified in step 2. They should have the same base name.
+One should have extension \verb|.private|. This is the private key, which should not be shared.
+The other should have extension \verb|.public|. This is the public key, and it should be shared
+to make verification possible.
+\section{Signing}
+To sign text message or other file do the following:
+\begin{enumerate}
+    \item Choose action {\em Sign} from drop menu at the top of the window.
+    \item Click {\em Change message path...} button and select file you want to sign.
+    \item Click {\em Change private key...} button and select private key you want to sign with.
+    \item Choose signature file destination and name by clicking {\em Change signature path...} button.
+    \item Click {\em Proceed} button.
+\end{enumerate}
+Signature of selected file should appear under path specified in step 4.
+This is text file containing number representation of signature.
+\section{Veryfying signature}
+To verify signature do the following:
+\begin{enumerate}
+    \item Choose action {\em Verify} from drop menu at the top of the window.
+    \item Click {\em Change public key...} button and select public key that is supposed
+        to match given signature.
+    \item Click {\em Change message path...} button and select file whose signature you are checking.
+    \item Choose signature file path by clicking {\em Change signature path...} button.
+    \item Click {\em Proceed} button.
+\end{enumerate}
+Information, about whether the file signature is correct or not should appear in
+info box. Be careful to pick the right key and signature file each time.
+
 \chapter{Code structure}
 
 % something goes wrong with picture placement
@@ -681,20 +738,4 @@ Save RSA key to the file.
 
 \end{fulllineitems}
 
-
-\renewcommand{\indexname}{Python Module Index}
-\begin{sphinxtheindex}
-\let\bigletter\sphinxstyleindexlettergroup
-\bigletter{t}
-\item\relax\sphinxstyleindexentry{todo\_project\_name}\sphinxstyleindexpageref{todo_project_name:\detokenize{module-todo_project_name}}
-\item\relax\sphinxstyleindexentry{todo\_project\_name.core}\sphinxstyleindexpageref{todo_project_name:\detokenize{module-todo_project_name.core}}
-\item\relax\sphinxstyleindexentry{todo\_project\_name.find\_prime}\sphinxstyleindexpageref{todo_project_name:\detokenize{module-todo_project_name.find_prime}}
-\item\relax\sphinxstyleindexentry{todo\_project\_name.md4}\sphinxstyleindexpageref{todo_project_name:\detokenize{module-todo_project_name.md4}}
-\item\relax\sphinxstyleindexentry{todo\_project\_name.md5}\sphinxstyleindexpageref{todo_project_name:\detokenize{module-todo_project_name.md5}}
-\item\relax\sphinxstyleindexentry{todo\_project\_name.mdn}\sphinxstyleindexpageref{todo_project_name:\detokenize{module-todo_project_name.mdn}}
-\item\relax\sphinxstyleindexentry{todo\_project\_name.rsa}\sphinxstyleindexpageref{todo_project_name:\detokenize{module-todo_project_name.rsa}}
-\end{sphinxtheindex}
-
-\renewcommand{\indexname}{Index}
-\printindex
 \end{document}
