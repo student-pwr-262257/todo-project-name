@@ -609,6 +609,11 @@ class State(QObject):
                         "Paths weren't given. Please fill them in.",
                     )
                     return
+                if not self.key_path.endswith(".private"):
+                    inform_about_error(
+                        "Only use private keys to sign messages. Plesase choose private key file.",
+                    )
+                    return
                 try:
                     key = rsa.read_key(Path(self.key_path), rsa.RSAKeyPrivate)
                     if self.message_path.endswith(".txt"):
@@ -635,6 +640,10 @@ class State(QObject):
                     self.key_path and self.message_path and self.signature_path
                 ):
                     inform_about_error("Please, fill in all the fields.")
+                if not self.key_path.endswith(".public"):
+                    inform_about_error(
+                        "Choose public key to verify signature."
+                    )
                 try:
                     key = rsa.read_key(Path(self.key_path), rsa.RSAKeyPublic)
                     signature = Path(self.signature_path).read_text("utf8")
@@ -642,7 +651,9 @@ class State(QObject):
                         message = Path(self.message_path).read_text("utf8")
                         is_correct = rsa.rsa_verify(message, signature, key)
                     else:
-                        is_correct = rsa.rsa_verify_file(self.message_path, signature, key)
+                        is_correct = rsa.rsa_verify_file(
+                            self.message_path, signature, key
+                        )
 
                     if is_correct:
                         QMessageBox.information(

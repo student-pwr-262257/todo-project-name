@@ -142,6 +142,7 @@ def rsa_sign(
     signature = pow(hashed, key.key, key.modulus)
     return hex(signature)[2:]
 
+
 def rsa_sign_file(
     filename: str, key: RSAKeyPrivate, algorithm: Type[Union[MD4, MD5]] = MD4
 ) -> str:
@@ -199,6 +200,7 @@ def rsa_verify(
     if hashed == uncoded:
         return True
     return False
+
 
 def rsa_verify_file(
     filename: str,
