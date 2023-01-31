@@ -9,7 +9,7 @@ from .md5 import MD5
 from abc import ABC
 
 
-class RSAKey(ABC):
+class RSAKey():
     def __init__(
         self, key: int, modulus: int, id: Optional[str] = None
     ) -> None:
